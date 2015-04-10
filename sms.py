@@ -2,7 +2,7 @@ import sqlite3
 import datetime
 import os
 
-#This function takes an sqlite_master tabke and gets a specified table's keys from it as a list
+#This function takes an sqlite_master table and gets a specified table's keys from it as a list
 def getKeys(master, name):
     table = [row for row in master if row[0] == "table" and row[1] == name][0]
     keys = table[4]
@@ -112,9 +112,9 @@ def try_assign(unknown, knowns):
         if name in [k["name"] for k in knowns]:
             for k in knowns:
                 if k["name"] == name:
-                    k["messages"].append(unknown["messages"])
+                    k["messages"] += unknown["messages"]
         else:
-            knowns.append({"name":name, "numbers": [unknown["number"]], "messages":unknown["messages"]})
+            knowns.append({"name":name, "numbers": [unknown["number"]], "messages":unknown["messages"], "message_count":0, "message_length_count":0})
     print("")
 
 
@@ -254,7 +254,6 @@ def merge_two_backups(b1, b2):
     still_merging = True
     while still_merging:
         longestName = max([len(c["name"]) for c in b1])
-        print(longestName)
         for x in range(max(len(b1),len(b2))):
             if x < len(b1):
                 print(str(x) + ":" + b1[x]["name"] + (" " * (longestName - len(b1[x]["name"]))), end=" ")
@@ -270,6 +269,7 @@ def merge_two_backups(b1, b2):
             b1.remove(b1[left])
         else:
             still_merging = False
+    b2 += b1
     return b2
     
 
@@ -279,7 +279,7 @@ def sortMessages(contact):
 
 #This function processes a set of backups and merges them
 def get_all_SMS(directory):
-    backup_names = [d for d in os.listdir(directory) if "." not in d]
+    backup_names = [d for d in os.listdir(directory) if "." not in d and d != "html"]
     print("Found " + str(len(backup_names)) + " backups: " + ", ".join(backup_names))
 
     #Get the backups
