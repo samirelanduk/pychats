@@ -26,7 +26,7 @@ for person in folks:
 print("Messages range from " + str(oldest) + " to " + str(newest))
 print("Messages breakdown:\n\tSMS: " + str(round(sms_count/(sms_count+fb_count+whatsapp_count)*100,1)) + "%\n\tFacebook: " + str(round(fb_count/(sms_count+fb_count+whatsapp_count)*100,1)) + "%\n\tWhatsapp: " + str(round(whatsapp_count/(sms_count+fb_count+whatsapp_count)*100,1)) + "%")
 
-def addMessages(messages):
+def addMessages(messages, name):
     html = "<table>\n\t<tr><td class='name'></td><td style='width: 200px;'></td><td></td><td style='width: 200px;'></td><td class='name'></td></tr>\n"
     for message in messages:
         html += "\t<tr>"
@@ -35,11 +35,15 @@ def addMessages(messages):
         else:
             html += "<td class='name left'>" + message["sender"].split(" ")[0] + "</td>"
         html += "<td colspan='2'>"
-        html += "<div class='time'>" + str(message["time"]) + "</div>"
+        html += "<div class='time'>" + str(message["time"].strftime("%Y-%m-%d %H:%M:%S")) + "</div>"
         html += "<p class='message "
         html += message["type"]
         if not message["from_me"]:
             html += " them"
+        if message["group"]:
+            html += " group"
+        if not message["from_me"] and message["sender"] != name:
+            html += " fade"
         html += "'>"
         if message["text"] is None:
             html += "NONE_TEXT"
@@ -84,7 +88,10 @@ td.left {text-align: right; padding-right: 4px;}
 td.right {text-align: left; padding-left: 4px;}
 td p {margin-bottom: 20px; margin-top: 0px; padding: 10px; border-radius: 15px; font-family: Helvetica;}
 p.SMS {border: 2px solid #66FF33; color: white; background-color: #66FF33;}
-p.them {color: black; background-color: #DDD;}</style>\n"""
+p.whatsapp {border: 2px solid #660033; color: white; background-color: #660033;}
+p.them {color: black; background-color: #DDD;}
+p.group {border-style:dotted;}
+p.fade {opacity: 0.3;}</style>\n"""
     html += "</head>\n"
     html += "<body>\n"
     html += "\t<h1>" + person["name"] + "</h1>\n"
@@ -120,7 +127,7 @@ p.them {color: black; background-color: #DDD;}</style>\n"""
             html += "<h3 id='" + str(year["year"]) + str(month["month"]) + "'>" + calendar.month_name[month["month"]] + "</h3>\n"
             for day in month["days"]:
                 html += "<h4>" + str(day["day"]) + " " + calendar.month_name[month["month"]] + "</h4>\n"
-                html += addMessages(day["messages"])
+                html += addMessages(day["messages"], person["name"])
     
     html += "</body>\n"
     html += "</html>"

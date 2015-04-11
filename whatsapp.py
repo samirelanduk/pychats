@@ -1,221 +1,231 @@
 import sqlite3
 import datetime
 import os
-import time
+import sms
 
-def formatTelnum(numString):
-    numString = numString.replace(" ","")
-    if numString[0] == "0":
-        numString = "+44" + numString[1:]
-    return numString
+#This function takes the fucked up whatsapp ID and returns a formatted phone number
+def processNumber(whatsappID):
+    number = whatsappID
+    if number is None: number = ""
+    if "@" in number: number = number.split("@")[0]
+    if "-" in number: number = number.split("-")[0]
+    if number.isnumeric(): number = "+" + number
+    return number
 
-def getTable(conn, name):
-    c = conn.cursor()
-    c.execute("SELECT * FROM sqlite_master;")
-    master = c.fetchall()
-    info = 0
-    for item in master:
-        if item[1] == name:
-            info = item
-    length = len("CREATE TABLE " + name) + 3
-    keys = info[4][length:-2].split(", ")
-    c.execute("SELECT * FROM " + name + ";")
-    table = c.fetchall()
-    table = [dict(zip(keys,t)) for t in table]
-    return table
-
-def getName(ID, contacts):
-    num = "+" + ID.split("@")[0].split("-")[0]
-    name = num
-    for c in contacts:
-        if num in c["numbers"]: name = c["name"]
-    return name
-        
-def printTable(table):
-    for item in table:
-        for k in item.keys():
-            print(k + ": " + str(item[k]))
-        print("")
+#This funtction takes a row from message table and returns a cleaned up dictionary
+def processMessage(zwamessage_row):
+    message = {}
+    message["text"] = zwamessage_row["ZTEXT"]
+    message["time"] = datetime.datetime.utcfromtimestamp(zwamessage_row["ZMESSAGEDATE"]+978264000)
+    message["from_me"] = bool(zwamessage_row["ZISFROMME"])
+    message["chat_session"] = zwamessage_row["ZCHATSESSION"]
+    if message["from_me"]:
+        message["sender"] = "+447825232871"
+    else:
+        message["sender"] = processNumber(zwamessage_row["ZFROMJID"])
+    message["receiver"] = processNumber(zwamessage_row["ZTOJID"])
+    message["message_type"] = zwamessage_row["ZMESSAGETYPE"]
+    message["group_member"] = zwamessage_row["ZGROUPMEMBER"]
+    if message["message_type"] > 0 and message["message_type"] < 6:
+        message["text"] = "<<MEDIA>>"
+    message["media"] = zwamessage_row["ZMEDIAITEM"]
+    message["type"] = "whatsapp"
+    message["group"] = False
+    return message
 
 
-#dirname = input("Directory: ")
-dirname = "C:\\Users\\Sam\\OneDrive\\7) Computing\\Programming\\Python projects\\5 - Message history\\backups"
-os.chdir(dirname)
+#Cleans up chatsession rows
+def processChatSession(zwachatsession_row):
+    session = {}
+    session["ID"] = zwachatsession_row["Z_PK"]
+    session["messages"] = []
+    if zwachatsession_row["ZGROUPINFO"] is None:
+        session["type"] = "direct"
+        session["contact_name"] = zwachatsession_row["ZPARTNERNAME"]
+        session["contact_number"] = processNumber(zwachatsession_row["ZCONTACTJID"])
+    else:
+        session["type"] = "group"
+        session["group_ID"] = zwachatsession_row["ZGROUPINFO"]
+        session["group_name"] = zwachatsession_row["ZPARTNERNAME"]
+    return session
 
-backups = []
-for directory in [f for f in os.listdir(".") if "." not in f]:
-    os.chdir(directory)
-    print("Starting " + directory + " whatsapp")
-    time.sleep(2)
 
-    #Get a list of contacts
-    conn = sqlite3.connect("31bb7ba8914766d4ba40d6dfb6113c8b614be442")
-    c = conn.cursor()
-    c.execute("SELECT * FROM sqlite_master;")
-    sqlite_master = c.fetchall()
-    c.execute("SELECT * FROM abperson;")
-    abperson = c.fetchall()
-    c.execute("SELECT * FROM ABMultivalue;")
-    abmultivalue = c.fetchall()
-    conn.close()
+#This function takes a directory containing a texts sqlite3 database and will return a
+#list of contacts dictionaries, with each contact having a list of messages
+def extractBackup(directory):
+    #Get the contacts in this backup
+    contacts = sms.extractContacts(directory)
 
-    contacts = [{"name": "Sam Ireland", "ID":0, "numbers":["+447825232871"]}]
-    for person in abperson:
-        contact = person[1]
-        if person[2] != None: contact = contact + " " + person[2]
-        contacts.append({"name": contact, "ID": person[0], "numbers":[]})
-
-    for mv in abmultivalue:
-        for contact in contacts:
-            if mv[1] == contact["ID"]:
-                if mv[5] != None and "@" not in mv[5]: contact["numbers"].append(formatTelnum(mv[5]))
-
-    #Get whatsapp messages
-    if "1b6b187a1b60b9ae8b720c79e2c67f472bab09c0" in os.listdir("."):
+    #Connect to the correct whatsapp database
+    if "1b6b187a1b60b9ae8b720c79e2c67f472bab09c0" in os.listdir(directory):
         conn = sqlite3.connect("1b6b187a1b60b9ae8b720c79e2c67f472bab09c0")
     else:
         conn = sqlite3.connect("7c7fba66680ef796b916b067077cc246adacf01d")
+    c = conn.cursor()
 
-    zwamessage = getTable(conn, "ZWAMESSAGE")
-    zwachatsession = getTable(conn, "ZWACHATSESSION")
-    zwagroupinfo = getTable(conn, "ZWAGROUPINFO")
-    conn.close()
+    #Get sqlite_master table
+    c.execute("SELECT * FROM sqlite_master;")
+    sqlite_master =  c.fetchall()
 
-    for m in zwamessage:
-        if m["ZTOJID VARCHAR"] != None: m["ZTOJID VARCHAR"] = getName(m["ZTOJID VARCHAR"], contacts)
-        if m["ZFROMJID VARCHAR"] != None: m["ZFROMJID VARCHAR"] = getName(m["ZFROMJID VARCHAR"], contacts)
+    #Get the zwamessage table
+    zwamessage_keys = sms.getKeys(sqlite_master, "ZWAMESSAGE")
+    c.execute("SELECT * FROM ZWAMESSAGE;")
+    zwamessage = c.fetchall()
+    zwamessage = [dict(zip(zwamessage_keys, m)) for m in zwamessage]
+    print("There are " + str(len(zwamessage)) + " messages in this backup")
+    
+    #Get the zwachatsession table
+    zwachatsession_keys = sms.getKeys(sqlite_master, "ZWACHATSESSION")
+    c.execute("SELECT * FROM ZWACHATSESSION;")
+    zwachatsession = c.fetchall()
+    zwachatsession = [dict(zip(zwachatsession_keys, m)) for m in zwachatsession]
+    print("There are " + str(len(zwachatsession)) + " chat sessions in this backup")
+    
+    #Get the zwagroupinfo table
+    zwagroupinfo_keys = sms.getKeys(sqlite_master, "ZWAGROUPINFO")
+    c.execute("SELECT * FROM ZWAGROUPINFO;")
+    zwagroupinfo = c.fetchall()
+    zwagroupinfo = [dict(zip(zwagroupinfo_keys, m)) for m in zwagroupinfo]
+    print(str(len(zwagroupinfo)) + " of these are group chats")
+                                                           
+    #Get the zwagroupmember table                                    
+    zwagroupmember_keys = sms.getKeys(sqlite_master, "ZWAGROUPMEMBER")
+    c.execute("SELECT * FROM ZWAGROUPMEMBER;")
+    zwagroupmember = c.fetchall()
+    zwagroupmember = [dict(zip(zwagroupmember_keys, m)) for m in zwagroupmember]
+    
+    #Turn the raw zwamessage list into a cleaned up messages list
+    messages = [processMessage(m) for m in zwamessage]
+    messages = [m for m in messages if m["message_type"] != 6]
+    print("There are " + str(len(messages)) + " messages after removing type 6 messages")
 
-    for c in zwachatsession:
-        c["ZCONTACTJID VARCHAR"] = getName(c["ZCONTACTJID VARCHAR"], contacts)
+    #Also clean up chat sessions (don't really need zwagroupinfo so don't bother with that)
+    chat_sessions = [processChatSession(c) for c in zwachatsession]
 
-    for g in zwagroupinfo:
-        g["ZOWNERJID VARCHAR"] = getName(g["ZOWNERJID VARCHAR"], contacts)
+    #Assign the direct messages and report what's left
+    for message in messages:
+        assigned = False
+        for session in chat_sessions:
+            if session["type"] == "direct" and message["chat_session"] == session["ID"]:
+                message.update({"weight":1})
+                session["messages"].append(message)
+                assigned = True
+        if not assigned:
+            message.update({"weight":"group"})
+    print(str(len([m for m in messages if m["weight"] == 1])) + " messages were assigned to direct chats and there are " + str(len([m for m in messages if m["weight"] == "group"])) + " messages unassigned")
 
-    chats = len(zwachatsession)
-    groups = len(zwagroupinfo)
-    groups2 = len([c for c in zwachatsession if c["ZGROUPINFO INTEGER"] != None])
+    #Assign the direct messages to contacts
+    for session in [c for c in chat_sessions if c["type"] == "direct"]:
+        assigned = False
+        for contact in contacts:
+            if session["contact_number"] in contact["numbers"]:
+                print("Assigning to " + session["contact_name"])
+                contact["messages"] += session["messages"]
+                assigned = True
+        if not assigned: print("Could not assign " + session["contact_name"])
 
-    print("\tThere are " + str(chats) + " chats.")
-    print("\tThere are " + str(groups) + " group chats.")
-    print("\tThere are " + str(groups2) + " group chats.")
-    print("\tGroup chat names: ")
-    for chat in [c for c in zwachatsession if c["ZGROUPINFO INTEGER"] != None]:
-        try:
-            print("\t\t" + str(chat["ZPARTNERNAME VARCHAR"]))
-        except:
-            print("\t\t<unprintable>")
+    #Now for the group messages - first assign each one to its group chat
+    group_assigned = 0
+    for message in messages:
+        for session in chat_sessions:
+            if session["type"] == "group" and message["chat_session"] == session["ID"]:
+                session["messages"].append(message)
+                group_assigned += 1
+    print(str(group_assigned) + " messages have been assigned to group chats")
 
-    chatsessions = []
-    for c in zwachatsession:
-        session = {}
-        if c["ZGROUPINFO INTEGER"] == None:
-            session["type"] = "direct"
-            session["contact"] = c["ZCONTACTJID VARCHAR"]
-        else:
-            session["type"] = "group"
-            session["group_name"] = c["ZPARTNERNAME VARCHAR"]
-        session["chat_ID"] = c["Z_PK INTEGER PRIMARY KEY"]
-        session["messages"] = []
-        chatsessions.append(session)
-    groups = [c for c in chatsessions if c["type"] == "group"]
-    directs = [c for c in chatsessions if c["type"] == "direct"]
+    #These messages will have INCORRECT sender information - correct this using info from zwagroupinfo:
+    for session in chat_sessions:
+        if session["type"] == "group":
+            for message in session["messages"]:
+                if not message["from_me"]:
+                    for member in zwagroupmember:
+                        if member["Z_PK"] == message["group_member"]:
+                            message["sender"] = processNumber(member["ZMEMBERJID"])
 
-    for m in zwamessage:
-        message = {}
-        if m["ZTEXT VARCHAR"] == None:
-             message["text"] = "<<<NONE_TEXT>>>"
-        else:
-            message["text"] = m["ZTEXT VARCHAR"]
-        message["time"] = datetime.datetime.utcfromtimestamp(m["ZMESSAGEDATE TIMESTAMP"]+978264705)
-        if m["ZTOJID VARCHAR"] != None:
-            message["recipient"] = m["ZTOJID VARCHAR"]
-        if m["ZFROMJID VARCHAR"] != None:
-            message["sender"] = m["ZFROMJID VARCHAR"]
-        else:
-            message["sender"] = "Sam Ireland"
-        for g in groups:
-            if g["chat_ID"] == m["ZCHATSESSION INTEGER"]:
-                g["messages"].append(message)
-        for d in directs:
-            if d["chat_ID"] == m["ZCHATSESSION INTEGER"]:
-                d["messages"].append(message)
+    #Give each group session a list of numbers involved
+    for group in chat_sessions:
+        if group["type"] == "group":
+            group["members"] = []
+            for message in group["messages"]:
+                group["members"].append(message["sender"])
+            group["members"] = list(set(group["members"]))
 
-    for d in directs:
-        name = d["messages"][0]["sender"]
-        if name == "Sam Ireland":
-            name = d["messages"][0]["recipient"]
-        d["contact"] = name
-
-    for g in groups:
-        g["members"] = []
-        for m in g["messages"]:
-            g["members"].append(m["sender"])
-            if "recipient" in m:
-                del m["recipient"]
-        g["members"] = list(set(g["members"]))
-        if "Sam Ireland" in g["members"]: g["members"].remove("Sam Ireland")
-
-    whatsapp_contacts = [{"name":d["contact"], "combinedMessages":[], "num":0} for d in directs if d["contact"] != "+Server"]
-    for wc in whatsapp_contacts:
-        for d in directs:
-            if wc["name"] == d["contact"]:
-                for message in  d["messages"]:
-                    m = message
-                    m.update({"weight":1})
-                    wc["combinedMessages"].append(m)
-        for g in groups:
-            if wc["name"] in g["members"]:
-                for message in g["messages"]:
-                    m = message
-                    weight = 0
-                    if m["sender"] == "Sam Ireland" or m["sender"] == wc["name"]:
-                        weight = 1/len(g["members"])
-                    m.update({"weight":weight})
-                    wc["combinedMessages"].append(m)
-    backups.append(whatsapp_contacts)
-    os.chdir("..")
+    #Now go through each contact and, if they appear in any of the groups, assign all messages with correct weight
+    for person in contacts:
+        for session in chat_sessions:
+            if session["type"] == "group" and bool(set(session["members"]).intersection(set(person["numbers"]))):
+                for message in session["messages"]:
+                    message.update({"group":True})
+                    person["messages"].append(dict(message))
+                    if message["sender"] == "+447825232871" or message["sender"] in person["numbers"]:
+                        person["messages"][-1]["weight"] = 1/(len(session["members"])-1)
+                    else:
+                        person["messages"][-1]["weight"] = 0
+                
 
 
-#Now try and merge the backups together
-toRemove = []
-for b in range(len(backups)-1):
-    for c1 in backups[b]:
-        for c2 in backups[b+1]:
-            if c1["name"] == c2["name"]:
-                print("\tMerging " + c1["name"])
-                c2["combinedMessages"] += c1["combinedMessages"]
-                toRemove.append(c1)
-    while len(toRemove) != 0:
-        backups[b].remove(toRemove.pop())
+
+
+    contacts = [c for c in contacts if len(c["messages"]) > 0 and c["name"] != "Sam Ireland"]
+
+    #Finish sorting out the fucking group sender field
+    for person in contacts:
+        for message in person["messages"]:
+            if message["from_me"]:
+                message["sender"] = "Sam Ireland"
+                message["receiver"] = person["name"]
+            else:
+                if message["group"]:
+                    for entry in zwagroupmember:
+                        if message["sender"] == processNumber(entry["ZMEMBERJID"]):
+                            message["sender"] = entry["ZCONTACTNAME"]
+                            break
+                else:
+                    message["sender"] = person["name"]
+                message["receiver"] = "Sam Ireland"
+        
+    return contacts
+
+
+#Same as SMS really
+def get_all_whatsapp(directory):
+    backup_names = [d for d in os.listdir(directory) if "." not in d and d != "html"]
+    print("Found " + str(len(backup_names)) + " backups: " + ", ".join(backup_names))
+
+    #Get the backups
+    backups = []
+    for backup in backup_names:
+        print("")
+        backups.append(extractBackup(directory + "\\" + backup))
+
+    if len(backups) > 1:
+        #Merge them together
+        recipient = backups[1]
+        for x in range(len(backups)-1):
+            recipient = sms.merge_two_backups(backups[x] ,recipient)
+
+    #recipient should now be the finalised contacts object - clean it up and we can be on our way!
+    people = [r for r in recipient if len(r["messages"]) > 0]
+    for person in people:
+        sms.sortMessages(person)
+        for message in person["messages"]:
+            person["message_count"] += message["weight"]
+            if message["text"] is None:
+                person["message_length_count"] += 0
+            else:
+                person["message_length_count"] += (len(message["text"]) * message["weight"])
+            
+    people = sorted(people, key=lambda k: k["message_length_count"], reverse=True)
+
+    return people
+
+if __name__ == "__main__":
+    import pickle
+    location = input("Where is the backup loacated? ")
+    file_name = input("What shall the dump be called? ")
     print("")
     
-    stillMerging = True
-    while stillMerging:
-        longestName = max([len(c["name"]) for c in backups[b]])     
-        for x in range(max(len(backups[b]),len(backups[b+1]))):
-            line = ""
-            if x < len(backups[b]): line = str(x) + ": " + backups[b][x]["name"] + (" "*(longestName-len(backups[b][x]["name"])))
-            else: line = "\t\t"
-            if x < len(backups[b+1]): line += "\t\t" + str(x) + ": " + backups[b+1][x]["name"]
-            print(line)
+    data = get_all_whatsapp(location)
 
-        user_input = input("\nCan we merge any of the above contacts? Same drill (left,right) if so, any other format if not. ")
-        if user_input.count(",") == 1 and user_input.split(",")[0].isnumeric() and "." not in user_input.split(",")[0] and int(user_input.split(",")[0]) <= len(backups[b]) and user_input.split(",")[1].isnumeric() and "." not in user_input.split(",")[1] and int(user_input.split(",")[1]) <= len(backups[b+1]):
-            left = int(user_input.split(",")[0])
-            right = int(user_input.split(",")[1])
-            backups[b+1][right]["combinedMessages"] += backups[b][left]["combinedMessages"]
-            backups[b].remove(backups[b][left])
-        else:
-            stillMerging = False
-
-people = []
-for b in backups:
-    people += b
-
-for person in people:
-    person["combinedMessages"] = sorted(person["combinedMessages"], key=lambda k:k["time"])
-    for cm in person["combinedMessages"]:
-        person["num"] += cm["weight"]
-
-people = sorted(people, key=lambda k: k["num"])
-people.reverse()
+    f = open(location + "\\" + file_name + ".p", "wb")
+    pickle.dump(data, f)

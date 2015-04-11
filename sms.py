@@ -88,6 +88,8 @@ def processMessage(message_row):
     message["time"] = datetime.datetime.utcfromtimestamp(message_row["date"]+978307200)
     message["from_me"] = bool(message_row["is_from_me"])
     message["type"] = "SMS"
+    message["group"] = False
+    message["weight"] = 1
     return message
 
 
