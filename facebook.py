@@ -1,17 +1,40 @@
 from bs4 import BeautifulSoup
-from urllib.request import urlopen
 import requests
 import datetime
 import os
+import calendar
+import sms
 
 fbIDs = {}
+#Get the real name (takes a while...)
+def getRealName(fbID):
+    name = ""
+    if "@" in fbID:
+        #It's an @ address. Has it already been encountered?
+        ID = fbID.split("@")[0]
+        if ID in fbIDs.keys():
+            #Yes it has, assign name
+            name = fbIDs[ID]
+        else:
+            #No it hasn't look it up
+            #print("Looking up " + fbID)
+            text = str(requests.get("http://graph.facebook.com/" + ID).text)
+            pairs = text[1:-1].split(",")
+            obj = {}
+            for p in pairs:
+                obj[p.split(":")[0][1:-1]] = p.split(":")[1][1:-1]
+            if "first_name" in obj.keys() and "last_name" in obj.keys():
+                name = obj["first_name"] + " " + obj["last_name"]
+                fbIDs[ID] = name
+            else:
+                name = fbID
+            #print("(It was " + name + ")")
+        return name
+    else:
+        return fbID
+    
 
-def countMessages(contact):
-    num = 0
-    for c in contact["conversations"]:
-        num += len(c["messages"])
-    return num
-
+#This takes a facebook date string and returns a normal datetime object
 def makeDate(text):
     months = {"January":1, "February":2, "March":3, "April":4, "May":5, "June":6, "July":7, "August":8, "September":9, "October":10, "November":11, "December":12}
     parts = text.split()
@@ -23,135 +46,143 @@ def makeDate(text):
     date = datetime.datetime(y,m,d,h,mn)
     return date
 
-def getName(fbID):
-    name = ""
-    if "@" in fbID:
-        #It's an @ address. Has it already been encountered?
-        ID = fbID.split("@")[0]
-        if ID in fbIDs.keys():
-            #Yes it has, assign name
-            name = fbIDs[ID]
-        else:
-            #No it hasn't look it up
-            print("Looking up " + fbID)
-            text = str(requests.get("http://graph.facebook.com/" + ID).text)
-            pairs = text[1:-1].split(",")
-            obj = {}
-            for p in pairs:
-                obj[p.split(":")[0][1:-1]] = p.split(":")[1][1:-1]
-            if "first_name" in obj.keys() and "last_name" in obj.keys():
-                name = obj["first_name"] + " " + obj["last_name"]
-                fbIDs[ID] = name
-            else:
-                name = fbID
-            print("(It was " + name + ")")
-        return name
-    else:
-        return fbID
+#This function takes a message div and returns a neat message dictionary
+def processMessage(mess_div):
+    message = {}
+    message["text"] = mess_div[1].text
+    message["sender"] = getRealName(mess_div[0].find(attrs={"class":"user"}).text)
+    message["from_me"] = False
+    if message["sender"] == "Sam Ireland":
+        message["from_me"] = True
+    message["fbtime"] = mess_div[0].find(attrs={"class":"meta"}).text
+    message["time"] = makeDate(mess_div[0].find(attrs={"class":"meta"}).text)
+    message["type"] = "facebook"
+    message["group"] = False    #for now
+    return message
+    
+        
 
-def processMessageDiv(div):
+#This function takes a conversation div and returns a neat conversation dictionary
+def processConversation(con_div):
     conversation = {}
-    conversation["members"] = [getName(d) for d in div.contents[0].split(", ")]
-    messageDivs = div.contents[1:]
-    messages = []
-    for x in range(len(messageDivs)//2):
-        message = messageDivs[x*2:(x*2)+2]
-        messages.append(message)
-    messages = [{"text":m[1].text, "sender":getName(m[0].find(attrs={"class":"user"}).text), "fbtime":m[0].find(attrs={"class":"meta"}).text, "time":makeDate(m[0].find(attrs={"class":"meta"}).text)} for m in messages]
-    messages.reverse()
-    conversation["messages"] = messages
+    #Get the members, as displayed in the html
+    conversation["members"] = [getRealName(n) for n in con_div.contents[0].string.split(", ")]
+
+    #Get the messages
+    conversation["messages"] = []
+    for x in range(int(len(con_div.contents[1:])/2)):
+        message = con_div.contents[1:][x*2:(x*2)+2]
+        conversation["messages"].append(message)
+    conversation["messages"] = [processMessage(m) for m in conversation["messages"]]
+    conversation["messages"].reverse()
+
+    #Add members not shown but who appear in messages
+    for message in conversation["messages"]:
+        if message["sender"] not in conversation["members"]:
+            conversation["members"].append(message["sender"])
+
+    #Remove any member who is 'Sam Ireland'
+    conversation["members"] = [c for c in conversation["members"] if c != "Sam Ireland" and "@" not in c]
     return conversation
 
-#Get soup of the messages.htm file
-print("Starting...")
-dirname = "C:\\Users\\Sam\\OneDrive\\7) Computing\\Programming\\Python projects\\5 - Message history\\backups"
-f = open(dirname + "/" + [h for h in os.listdir(dirname) if ".htm" in h][0], "rb")
-data = f.read()
-f.close()
-start = datetime.datetime.now()
-soup = BeautifulSoup(data)
-end = datetime.datetime.now()
-print("Soup acquired. It took " + str((end - start).seconds) + " seconds.")
 
-#Get a list of conversations
-conversations = []
-for div in soup.body.contents[1].contents[1:]:
-    conversations += div.contents
-print("There are " + str(len(conversations)) + " conversations here.")
+#This function takes the messages html file and gets a list of conversations from it
+def getConversations(html):
+    #Get soup of page
+    f = open(html, "rb")
+    data = f.read()
+    f.close()
 
-#Get a list of conversation members
-members = [c.contents[0].split(", ") for c in conversations]
-oneperson = [m for m in members if len(m) == 1]
-twopeople = [m for m in members if len(m) == 2]
-multiperson = [m for m in members if len(m) > 2]
+    print("Getting soup...")
+    start = datetime.datetime.now()
+    soup = BeautifulSoup(data)
+    end = datetime.datetime.now()
+    print("Soup acquired. It took " + str((end - start).seconds) + " seconds.")
 
-#Get everything in the right category
-for members in twopeople:
-    if "Sam Ireland" in members:
-        members.remove("Sam Ireland")
-    elif "1359142679@facebook.com" in members:
-        members.remove("1359142679@facebook.com")
-    else:
-        #This conversation has two people in it but neither are me - it belongs in the group chat list
-        multiperson.append(members)
-        members.append("_0_")
-twopeople = [t for t in twopeople if "_0_" not in t]
-twopeople += [o for o in oneperson if "Sam Ireland" not in o and "1359142679@facebook.com" not in o]
-twopeople = [t[0] for t in twopeople]
+    #Get a list of conversation divs
+    conversation_divs = []
+    for div in soup.body.contents[1].contents[1:]:
+        conversation_divs += div.contents
+    print("There are " + str(len(conversation_divs)) + " conversations here.")
 
-print(str(len(twopeople)) + " have two people in them.")
-print(str(len(multiperson)) + " have more than two people in them.")
+    #Clean up and return
+    print("Processing conversations...")
+    conversations = [processConversation(c) for c in conversation_divs]
 
-#Define contacts as all the people I've had a private conversation with. Therefore, if someone has
-#communicated with me only in group chat, they are ignored.
-contacts = list(set([getName(t) for t in twopeople]))
-print("There are " + str(len(contacts)) + " contacts.")
-        
-#Give each contact their own message divs
-contacts = [{"name":c,"conversations":[]} for c in contacts if c != "Sam Ireland"]
-for contact in contacts:
+    return conversations
+
+#Returns a list of contacts with messages attached
+def get_all_facebook(directory):
+    #Get a list of conversations
+    html = directory + "//" + [f for f in os.listdir(directory) if f == "messages.htm"][0]
+    conversations = getConversations(html)
+
+    #Get all the one-on-one conversations
+    directs = []
     for conv in conversations:
-        people = conv.contents[0].split(", ")
-        if contact["name"] in people:
-            contact["conversations"].append(conv)
+        if len(conv["members"]) <= 1:
+            conv["assigned"] = True
+            directs.append(conv)
+        else:
+            conv["assigned"] = False
+    directs = [d for d in directs if len(d["members"]) > 0]
+    print(str(len([c for c in conversations if c["assigned"]])) + " of these are direct conversations")
+    print(str(len([c for c in conversations if not c["assigned"]])) + " group conversations remain")
 
-#Make these divs a bit more readable
-for c in contacts:
-    c["conversations"] = [processMessageDiv(div) for div in c["conversations"]]
+    #Define contacts as all people I've had a direct conversation with
+    contacts = []
+    for d in directs:
+        contacts.append(d["members"][0])
+    contacts = list(set(contacts))
+    contacts = [{"name":c, "messages":[], "message_count":0, "message_length_count":0} for c in contacts]
+    print("After merging, there are " + str(len(contacts)) + " contacts.")
 
-#Remove my name from the conversations
-for c in contacts:
-    for conv in c["conversations"]:
-        if "Sam Ireland" in conv["members"]:
-            conv["members"].remove("Sam Ireland")
-        elif "1359142679@facebook.com" in conv["members"]:
-            conv["members"].remove("1359142679@facebook.com")
+    #Give each contact their direct messages
+    for c in contacts:
+        for d in directs:
+            if c["name"] == d["members"][0]:
+                c["messages"] += d["messages"]
+        for m in c["messages"]:
+            m.update({"weight":1})
 
-#Sort conversations by number of messages in them
-for c in contacts:
-    c["conversations"] = sorted(c["conversations"], key=lambda k: len(k["messages"]))
-    c["conversations"].reverse()
+    #Now give them all their group messages
+    groups = [g for g in conversations if not g["assigned"]]
+    for c in contacts:
+        for g in groups:
+            if c["name"] in g["members"]:
+                for message in g["messages"]:
+                    m = dict(message)
+                    m.update({"weight":0})
+                    m["group"] = True
+                    if m["sender"] == "Sam Ireland" or m["sender"] == c["name"]:
+                        m["weight"] = 1/(len(g["members"])-1)
+                    c["messages"].append(m)
 
-#Remove empty conversation contacts etc
-contacts = [c for c in contacts if len(c["conversations"]) != 0 and "@" not in c["name"] and countMessages(c) > 1]
+    #Sort and prep contacts, then return them
+    contacts = [c for c in contacts if len(c["messages"]) > 1 and "@" not in c["name"] and "Sam Ireland" in [m["sender"] for m in c["messages"]]]
+    sms.deduplicate(contacts)
+    for person in contacts:
+        sms.sortMessages(person)
+        for message in person["messages"]:
+            person["message_count"] += message["weight"]
+            person["message_length_count"] += (len(message["text"]) * message["weight"])
 
-#Finally, give each contact a combined list of messages, weighted according to group size
-for c in contacts:
-    c["combinedMessages"] = []
-    for conv in c["conversations"]:
-        for m in conv["messages"]:
-            weight = 0
-            if m["sender"] == "Sam Ireland" or m["sender"] == c["name"]:
-                weight = 1/len(conv["members"])
-            message = m
-            message.update({"weight":weight})
-            c["combinedMessages"].append(message)
-    c["combinedMessages"] = sorted(c["combinedMessages"], key=lambda k:k["time"])
-    c["combinedMessages"] = [c for c in c["combinedMessages"] if c["text"] != ""]
-    c["num"] = 0
-    for cm in c["combinedMessages"]:
-        c["num"] += cm["weight"]
+    contacts = sorted(contacts, key=lambda k: k["message_length_count"], reverse=True)
 
-contacts = sorted(contacts, key=lambda k: k["num"])
-contacts.reverse()
+    return contacts
 
+def findString(s, contacts):
+    for p in contacts:
+        if s in "".join(p["members"]): print(p["members"])
+
+if __name__ == "__main__":
+    import pickle
+    location = input("Where is the backup loacated? ")
+    file_name = input("What shall the dump be called? ")
+    print("")
+    
+    data = get_all_facebook(location)
+
+    f = open(location + "\\" + file_name + ".p", "wb")
+    pickle.dump(data, f)
+    
