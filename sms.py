@@ -107,7 +107,10 @@ def try_assign(unknown, knowns):
         else:
             m += "Them: "
         m += mtu["text"]
-        print(m)
+        try:
+            print(m)
+        except:
+            print("__BADCHARS__")
     print("------")
     name = input("Where should the above go? Name, or '.' to delete. ")
     if name != ".":
@@ -141,7 +144,8 @@ def deduplicate(l):
         if checkEntry(response, x, x):
             first,second = [int(n) for n in response.split(",")]
             l[first]["messages"] += l[second]["messages"]
-            l[first]["numbers"] += l[second]["numbers"]
+            if "numbers" in l[first].keys() and "numbers" in l[second].keys():
+                l[first]["numbers"] += l[second]["numbers"]
             l.remove(l[second])
         else:
             allFine = True
@@ -232,6 +236,9 @@ def extractBackup(directory):
     #After all that, there might be some contacts taking up two entries. Resolve this.
     deduplicate(contacts)
 
+    #Remove people with no messages
+    contacts = [x for x in contacts if len(x["messages"]) > 0]
+
     #All done! Message sorting and field policing can be done later
     print("")
     return contacts
@@ -239,40 +246,50 @@ def extractBackup(directory):
 
 #This function takes two backups and merges them. Backup must be a list of dictionaries with each dict having messages
 def merge_two_backups(b1, b2):
+    #b1 is the 'new' one, b2 the recipient
+    print("")
     #Attempt automatic merger
     toRemove = []
-    for p1 in b1:
-        for p2 in b2:
+    for p1 in b1[:]:
+        for p2 in b2[:]:
             if p1["name"] == p2["name"]:
                 print("merging " + p1["name"])
                 p2["messages"] += p1["messages"]
-                p2["numbers"] += p1["numbers"]
+                if "numbers" in p1.keys() and "numbers" in p2.keys():
+                    p2["numbers"] += p1["numbers"]
                 toRemove.append(p1)
                 break
     while len(toRemove) > 0:
-        b1.remove(toRemove.pop())
-        
+        b1.remove(toRemove.pop()) 
+  
     #Ask for manual merge
-    still_merging = True
-    while still_merging:
-        longestName = max([len(c["name"]) for c in b1])
-        for x in range(max(len(b1),len(b2))):
-            if x < len(b1):
-                print(str(x) + ":" + b1[x]["name"] + (" " * (longestName - len(b1[x]["name"]))), end=" ")
+    if len(b1) != 0:
+        still_merging = True
+        while still_merging:
+            longestName = max([len(c["name"]) for c in b1])
+            for x in range(max(len(b1),len(b2))):
+                if x < len(b1):
+                    if x >= len(b2):
+                        e ="\n"
+                    else:
+                        e = " "
+                    print(str(x) + ":" + b1[x]["name"] + (" " * (longestName - len(b1[x]["name"]))), end=e)
+                else:
+                    print((" " * longestName), end=" ")
+                if x < len(b2):
+                    print("\t\t" + str(x) + ": " + b2[x]["name"])
+            response = input("\nDo any of the above need merging? Format (left,right): ")
+            if checkEntry(response, len(b1)-1, len(b2)-1):
+                left, right = [int(n) for n in response.split(",")]
+                b2[right]["messages"] += b1[left]["messages"]
+                if "numbers" in b2[right].keys() and "numbers" in b1[left].keys():
+                    b2[right]["numbers"] += b1[left]["numbers"]
+                b1.remove(b1[left])
             else:
-                print((" " * longestName), end=" ")
-            if x < len(b2):
-                print("\t\t" + str(x) + ": " + b2[x]["name"])
-        response = input("\nDo any of the above need merging? Format (left,right): ")
-        if checkEntry(response, len(b1)-1, len(b2)-1):
-            left, right = [int(n) for n in response.split(",")]
-            b2[right]["messages"] += b1[left]["messages"]
-            b2[right]["numbers"] += b1[left]["numbers"]
-            b1.remove(b1[left])
-        else:
-            still_merging = False
+                still_merging = False
     b2 += b1
-    return b2
+    comb = b2
+    return comb
     
 
 #This function takes a contact and sorts their messages by time
@@ -293,8 +310,9 @@ def get_all_SMS(directory):
     if len(backups) > 1:
         #Merge them together
         recipient = backups[1]
-        for x in range(len(backups)-1):
-            recipient = merge_two_backups(backups[x] ,recipient)
+        for x in range(len(backups)):
+            if x != 1:
+                recipient = merge_two_backups(backups[x][:] ,recipient[:])
 
     #recipient should now be the finalised contacts object - clean it up and we can be on our way!
     people = [r for r in recipient if len(r["messages"]) > 0]
@@ -326,6 +344,7 @@ if __name__ == "__main__":
     import pickle
     location = input("Where is the backup loacated? ")
     file_name = input("What shall the dump be called? ")
+    if file_name[-2:] == ".p": file_name = file_name[:-2]
     print("")
     
     data = get_all_SMS(location)

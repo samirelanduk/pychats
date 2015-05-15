@@ -18,6 +18,7 @@ def getRealName(fbID):
         else:
             #No it hasn't look it up
             #print("Looking up " + fbID)
+            print("Sending a request for " + fbID + "...")
             text = str(requests.get("http://graph.facebook.com/" + ID).text)
             pairs = text[1:-1].split(",")
             obj = {}
@@ -179,6 +180,7 @@ if __name__ == "__main__":
     import pickle
     location = input("Where is the backup loacated? ")
     file_name = input("What shall the dump be called? ")
+    if file_name[-2:] == ".p": file_name = file_name[:-2]
     print("")
     
     data = get_all_facebook(location)

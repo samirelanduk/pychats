@@ -191,7 +191,8 @@ def extractBackup(directory):
 def get_all_whatsapp(directory):
     backup_names = [d for d in os.listdir(directory) if "." not in d and d != "html"]
     print("Found " + str(len(backup_names)) + " backups: " + ", ".join(backup_names))
-
+    recipient = []
+    
     #Get the backups
     backups = []
     for backup in backup_names:
@@ -201,9 +202,9 @@ def get_all_whatsapp(directory):
     if len(backups) > 1:
         #Merge them together
         recipient = backups[1]
-        for x in range(len(backups)-1):
-            recipient = sms.merge_two_backups(backups[x] ,recipient)
-
+        for x in range(len(backups)):
+            if x != 1:
+                recipient = sms.merge_two_backups(backups[x] ,recipient)
     #recipient should now be the finalised contacts object - clean it up and we can be on our way!
     people = [r for r in recipient if len(r["messages"]) > 0]
     for person in people:
@@ -223,6 +224,7 @@ if __name__ == "__main__":
     import pickle
     location = input("Where is the backup loacated? ")
     file_name = input("What shall the dump be called? ")
+    if file_name[-2:] == ".p": file_name = file_name[:-2]
     print("")
     
     data = get_all_whatsapp(location)
