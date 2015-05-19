@@ -4,7 +4,7 @@ import os
 import sms
 
 #I'll fix this later...
-my_number = input("WHat is your phone number? (format +xx0000...) ")
+my_number = input("What is your phone number? (format +xx0000...) ")
 
 #This function takes the mangled whatsapp ID and returns a formatted phone number
 def processNumber(whatsappID):
