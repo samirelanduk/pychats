@@ -6,7 +6,7 @@ import sms
 #I'll fix this later...
 my_number = input("WHat is your phone number? (format +xx0000...) ")
 
-#This function takes the fucked up whatsapp ID and returns a formatted phone number
+#This function takes the mangled whatsapp ID and returns a formatted phone number
 def processNumber(whatsappID):
     number = whatsappID
     if number is None: number = ""
@@ -171,7 +171,7 @@ def extractBackup(directory):
 
     contacts = [c for c in contacts if len(c["messages"]) > 0 and c["name"] != "Sam Ireland"]
 
-    #Finish sorting out the fucking group sender field
+    #Finish sorting out the group sender field
     for person in contacts:
         for message in person["messages"]:
             if message["from_me"]:
