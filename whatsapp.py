@@ -3,6 +3,9 @@ import datetime
 import os
 import sms
 
+#I'll fix this later...
+my_number = input("WHat is your phone number? (format +xx0000...) ")
+
 #This function takes the fucked up whatsapp ID and returns a formatted phone number
 def processNumber(whatsappID):
     number = whatsappID
@@ -20,7 +23,7 @@ def processMessage(zwamessage_row):
     message["from_me"] = bool(zwamessage_row["ZISFROMME"])
     message["chat_session"] = zwamessage_row["ZCHATSESSION"]
     if message["from_me"]:
-        message["sender"] = "+447825232871"
+        message["sender"] = my_number
     else:
         message["sender"] = processNumber(zwamessage_row["ZFROMJID"])
     message["receiver"] = processNumber(zwamessage_row["ZTOJID"])
@@ -157,7 +160,7 @@ def extractBackup(directory):
                 for message in session["messages"]:
                     message.update({"group":True})
                     person["messages"].append(dict(message))
-                    if message["sender"] == "+447825232871" or message["sender"] in person["numbers"]:
+                    if message["sender"] == my_number or message["sender"] in person["numbers"]:
                         person["messages"][-1]["weight"] = 1/(len(session["members"])-1)
                     else:
                         person["messages"][-1]["weight"] = 0
