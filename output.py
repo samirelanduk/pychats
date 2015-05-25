@@ -1,8 +1,8 @@
 import pickle
 import datetime
 import calendar
-import pygal
-from pygal.style import Style
+import matplotlib.pyplot as plt
+import os
 
 #Get the dump
 dump = input("Where is the dump? ")
@@ -27,6 +27,13 @@ for person in folks:
         
 print("Messages range from " + str(oldest) + " to " + str(newest))
 print("Messages breakdown:\n\tSMS: " + str(round(sms_count/(sms_count+fb_count+whatsapp_count)*100,1)) + "%\n\tFacebook: " + str(round(fb_count/(sms_count+fb_count+whatsapp_count)*100,1)) + "%\n\tWhatsapp: " + str(round(whatsapp_count/(sms_count+fb_count+whatsapp_count)*100,1)) + "%")
+
+#Looks for svg.svg and returns its xml text
+def getSVG():
+    f = open("svg.svg", "r")
+    xml = f.read()
+    f.close()
+    return xml
 
 def addMessages(messages, name):
     html = "<table>\n\t<tr><td class='name'></td><td style='width: 200px;'></td><td></td><td style='width: 200px;'></td><td class='name'></td></tr>\n"
@@ -66,11 +73,70 @@ def findPerson(name):
     for person in folks:
         if person["name"] == name:
             return person
-        found = True
+            found = True
     if not found:
-        print("Couldn't find them, not returning anything.")
+        print("Couldn't find " + name)
 
-        
+def get_MPD(person):
+    days = []
+    data = []
+    messages = [x for x in person["messages"] if x["time"] >= datetime.datetime(2011,1,1,0,0,1)]
+    first_day = datetime.datetime(messages[0]["time"].year, messages[0]["time"].month, messages[0]["time"].day)
+    last_day = datetime.datetime(newest.year, newest.month, newest.day)
+    days.append(first_day)
+    while days[-1] != last_day:
+        days.append(days[-1] + datetime.timedelta(days=1))
+    for day in days:
+        value = 0
+        for message in messages:
+            if day.year == message["time"].year and day.month == message["time"].month and day.day == message["time"].day and message["text"] != None:
+                value += (message["weight"] * len(message["text"]))
+        data.append(value)
+        value = 0
+    return (days, data)
+
+
+def get_maMPD(person):
+    days, data = get_MPD(person)
+    avg_data = []
+    data = ([0] * 30) + data
+    for x in range(len(days)):
+        avg_data.append(sum(data[x:x+30])/30)
+    
+    return (days, avg_data)
+                
+
+def get_MPM(person):
+    months = []
+    data = []
+    messages = [x for x in person["messages"] if x["time"] >= datetime.datetime(2011,1,1,0,0,1)]
+    first_month = datetime.datetime(messages[0]["time"].year, messages[0]["time"].month, 1)
+    last_month = datetime.datetime(newest.year, newest.month, 1)
+    months.append(first_month)
+    while months[-1] != last_month:
+        if months[-1].month == 12:
+            months.append(datetime.datetime(months[-1].year+1,1,1))
+        else:
+            months.append(datetime.datetime(months[-1].year,months[-1].month+1,1))
+    for month in months:
+        value = 0
+        for message in messages:
+            if month.year == message["time"].year and month.month == message["time"].month and message["text"] != None:
+                value += (message["weight"] * len(message["text"]))
+        data.append(value)
+        value = 0
+    return (months, data)
+
+
+def get_maMPM(person):
+    months, data = get_MPM(person)
+    avg_data = []
+    data = ([0] * 3) + data
+    for x in range(len(months)):
+        avg_data.append(sum(data[x:x+3])/3)
+    
+    return (months, avg_data)
+
 def outputPerson(person):
     #Add the header stuff
     html = "<html>\n"
@@ -100,7 +166,86 @@ p.fade {opacity: 0.3;}</style>\n"""
     html += "<body>\n"
     html += "\t<h1>" + person["name"] + "</h1>\n"
 
-    #Rejigger the missages into years, months and days
+    html += "<table id='charts'>\n"
+    html += "<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n"
+    html += "<tr>\n"
+
+    #Add a piechart
+    data = {"SMS":0,"whatsapp":0,"facebook":0}
+    for m in person["messages"]:
+        data[m["type"]] += m["weight"]
+    color = []
+    if data["SMS"] != 0: color.append("Green")
+    if data["whatsapp"] != 0: color.append("Purple")
+    if data["facebook"] != 0: color.append("Blue")
+    plt.pie([x for x in [data["SMS"], data["whatsapp"], data["facebook"]] if x != 0], labels=[x for x in ["SMS", "whatsapp", "facebook"] if data[x] != 0], colors=color,)
+    plt.savefig("svg.svg")
+    pie_svg = getSVG()
+    html += "<td></td><td></td><td colspan='4' style='padding:30px;'>" + pie_svg + "</td><td></td><td></td></tr>\n"
+    plt.clf()
+    
+    #Add days bar graph
+    days, data = get_MPD(person)
+    plt.bar(days, data, color="r", edgecolor="none", width=2)
+    ticks = [x for x in days if x.month == 1 and x.day == 1]
+    tick_labels = [str(x.day) + "/" + str(x.month) + "/" + str(x.year)[2:] for x in ticks]
+    plt.xticks(ticks, tick_labels)
+    plt.grid(b=True, which='major', color='k', linestyle='--')
+    plt.title("Messages per day")
+    plt.xlabel("Date")
+    plt.ylabel("Messages (chars)")
+    plt.savefig("svg.svg")
+    bar1_svg = getSVG()
+    html += "<td colspan='4'>" + bar1_svg + "</td>\n"
+    plt.clf()
+
+    #Add days line graph
+    days, data = get_maMPD(person)
+    plt.plot(days, data, color="r")
+    plt.xticks(ticks, tick_labels)
+    plt.grid(b=True, which='major', color='k', linestyle='--')
+    plt.title("Messages per day (Moving average)")
+    plt.xlabel("Date")
+    plt.ylabel("Messages (chars)")
+    plt.savefig("svg.svg")
+    line1_svg = getSVG()    
+    html += "<td colspan='4'>" + line1_svg + "</td>\n"
+    plt.clf()
+    html += "</tr>\n"
+
+    html += "<tr>\n"
+
+    #Add months bar graph
+    months, data = get_MPM(person)
+    plt.bar(months, data, color="c", width=15)
+    ticks = [x for x in days if x.month == 1 and x.day == 1]
+    tick_labels = [str(x.day) + "/" + str(x.month) + "/" + str(x.year)[2:] for x in ticks]
+    plt.xticks(ticks, tick_labels)
+    plt.grid(b=True, which='major', color='k', linestyle='--')
+    plt.title("Messages per month")
+    plt.xlabel("Date")
+    plt.ylabel("Messages (chars)")
+    plt.savefig("svg.svg")
+    bar2_svg = getSVG()
+    html += "<td colspan='4'>" + bar2_svg + "</td>\n"
+    plt.clf()
+
+    #Add months line graph
+    months, data = get_maMPM(person)
+    plt.plot(months, data, color="c", linewidth=2)
+    plt.xticks(ticks, tick_labels)
+    plt.grid(b=True, which='major', color='k', linestyle='--')
+    plt.title("Messages per month (3-month moving average)")
+    plt.xlabel("Date")
+    plt.ylabel("Messages (chars)")
+    plt.savefig("svg.svg")
+    line2_svg = getSVG()
+    html += "<td colspan='4'>" + line2_svg + "</td>\n"
+    plt.clf()
+    html += "</tr>\n"
+    html += "</table>\n"
+    
+    #Rejigger the messages into years, months and days
     year_list = set([int(m["time"].year) for m in person["messages"]])
     years = [{"year":y, "messages":[], "month_list":[], "months":[]} for y in year_list]
 
@@ -114,122 +259,7 @@ p.fade {opacity: 0.3;}</style>\n"""
             month["days"] = [{"day":d, "messages":[]} for d in month["day_list"]]
             for day in month["days"]:
                 day["messages"] = [m for m in month["messages"] if int(m["time"].day) == int(day["day"])]
-
-
-    html += "<table id='charts'>\n"
-    html += "<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n"
-    html += "<tr>\n"
-
-    #Add a piechart
-    data = {"SMS":0,"whatsapp":0,"facebook":0}
-    for m in person["messages"]:
-        data[m["type"]] += m["weight"]
-    pie_style = Style(colors=("#66FF33", "#660033", "#00F"))
-    pie = pygal.Pie(style=pie_style)
-    pie.title = "Messages by type"
-    pie.add("SMS",data["SMS"])
-    pie.add("whatsapp",data["whatsapp"])
-    pie.add("facebook",data["facebook"])
-    html += "<td></td><td></td><td colspan='4' style='padding:30px;'>" + pie.render().decode(encoding='UTF-8') + "</td><td></td><td></td></tr>\n"
-    #Add days bar graph
-    start_day = datetime.datetime(2011,1,1)
-    end_day = datetime.datetime(newest.year, newest.month, newest.day)
-    days = [start_day]
-    while days[-1] <= end_day:
-        days.append(days[-1] + datetime.timedelta(days=1))
-    day_dict = {d:0 for d in days}
-    for m in [m for m in person["messages"] if m["time"] >= start_day]:
-        day = datetime.datetime(m["time"].year, m["time"].month, m["time"].day)
-        if message["text"] is None:
-            day_dict[day] += 0
-        else:
-            day_dict[day] += (message["weight"] * len(message["text"]))
-    bar = pygal.Bar()
-    bar.title = "Message rate"
-    bar.x_labels = map(str, days)
-    bar.add("Messages", [day_dict[d] for d in days])
-    html += "<td colspan='4'>" + bar.render().decode(encoding='UTF-8') + "</td>\n"
-
-    #Add days line graph
-    avg_dates = days[30:]
-    avg_dates_dict = {d:0 for d in avg_dates}
-    for ad in range(len(avg_dates)):
-        for d in days[ad:ad+30]:
-            avg_dates_dict[avg_dates[ad]] += day_dict[d]
-        avg_dates_dict[avg_dates[ad]] /= 30
-    line = pygal.DateY(show_dots = False)
-    line.title = "Moving Average"
-    values = []
-    for x in range(len(avg_dates)):
-        values.append((avg_dates[x], avg_dates_dict[avg_dates[x]]))
-    line.add("Messages", values)
-    html += "<td colspan='4'>" + line.render().decode(encoding='UTF-8') + "</td>\n"
-    html += "</tr>\n"
-
-    html += "<tr>\n"
-
-    month_style = Style(colors = ("#FF00FF", "#FFCCFF"))
-    #Add months bar graph
-    start_month = datetime.datetime(2011,1,1)
-    end_month = datetime.datetime(newest.year, newest.month, 1)
-    months = [start_month]
-    while months[-1] < end_month:
-        if months[-1].month == 12:
-            months.append(datetime.datetime(months[-1].year+1,1,1))
-        else:
-            months.append(datetime.datetime(months[-1].year,months[-1].month+1,1))
-    month_dict = {m:0 for m in months}
-    for m in [m for m in person["messages"] if m["time"] >= start_day]:
-        month = datetime.datetime(m["time"].year, m["time"].month, 1)
-        if message["text"] is None:
-            month_dict[month] += 0
-        else:
-            month_dict[month] += (message["weight"] * len(message["text"]))
-    bar = pygal.StackedBar(style=month_style)
-    bar.title = "Message rate"
-    bar.x_labels = map(str, months)
-    projection = [0] * (len(months) - 1)
-    projected = ((month_dict[months[-1]] / newest.day) * 30) - month_dict[months[-1]]
-    projection.append(projected)
-    p_data = []
-    for x in range(len(months)):
-        p_data.append((months[x], projection[x]))
-    bar.add("Messages", [month_dict[m] for m in months])
-    bar.add("Projected", projection)
-    html += "<td colspan='4'>" + bar.render().decode(encoding='UTF-8') + "</td>\n"
-
-    #Add months line graph
-    avg_months = months[3:]
-    avg_months_dict = {m:0 for m in avg_months}
-    for am in range(len(avg_months)):
-        for m in months[am:am+3]:
-            avg_months_dict[avg_months[am]] += month_dict[m]
-        avg_months_dict[avg_months[am]] /= 3
-    month_style = Style(colors = ("#FFCCFF", "#FF00FF"))
-    line = pygal.DateY(show_dots = False, style=month_style)
-    line.title = "Moving Average"
-    values = []
-    for x in range(len(avg_months)):
-        values.append((avg_months[x], avg_months_dict[avg_months[x]]))
-    avg_months_pro = months[3:]
-    avg_months_dict_pro = {m:0 for m in avg_months_pro}
-    for am in range(len(avg_months_pro)):
-        for m in months[am:am+3]:
-            if am == len(avg_months_pro) - 1:
-                avg_months_dict_pro[avg_months_pro[am]] += projected + month_dict[m]
-            else:
-                avg_months_dict_pro[avg_months_pro[am]] += month_dict[m]
-        avg_months_dict_pro[avg_months_pro[am]] /= 3
-    values2 = []
-    for x in range(len(avg_months_pro)):
-        values2.append((avg_months_pro[x], avg_months_dict_pro[avg_months_pro[x]]))
-    line.add("Projected", values2)
-    line.add("Messages", values)
-    html += "<td colspan='4'>" + line.render().decode(encoding='UTF-8') + "</td>\n"
-    html += "</tr>\n"
-    html += "</table>\n"
-    
-    
+                
     #Add the nav bar
     html += "<div id='nav'><table style='border-collapse: separate; width: auto; border-spacing: 20px 0px; margin-left: 0px; margin-right: 0px;'><tr>"
     for year in years:
@@ -259,3 +289,66 @@ p.fade {opacity: 0.3;}</style>\n"""
         except:
             f.write("?")
     f.close()
+    os.remove("svg.svg")
+
+def compareMulti(people):
+    dicts = []
+    first_day = datetime.datetime.now()
+    last_day = datetime.datetime(newest.year,newest.month,newest.day)
+    for person in people:
+        if person["messages"][0]["time"] < first_day: first_day = person["messages"][0]["time"]
+        days,values = get_maMPD(person)
+        dicts.append(dict(zip(days,values)))
+    first_day = datetime.datetime(first_day.year,first_day.month,first_day.day)
+    days = [first_day]
+    while days[-1] != last_day:
+        days.append(days[-1] + datetime.timedelta(days=1))
+    days = [x for x in days if x >= datetime.datetime(2011,1,1)]
+    data = []
+    for d in dicts:
+        series = []
+        for day in days:
+            series.append(d[day]) if day in d.keys() else series.append(0)
+        data.append(series)
+    x = 0
+    for d in data:
+        plt.plot(days,d,label=people[x]["name"])
+        x += 1
+    ticks = [x for x in days if x.month == 1 and x.day == 1]
+    tick_labels = [str(x.day) + "/" + str(x.month) + "/" + str(x.year)[2:] for x in ticks]
+    plt.xticks(ticks, tick_labels)
+    plt.legend()
+    plt.show()
+
+
+def compareGroups():
+    #Get the pickled file with the groups
+    f = open(dump[:len(dump) - dump[::-1].find("\\")] + "categories.p", "rb")
+    categories = pickle.load(f)
+    groups = {}
+    for c in categories.keys():
+        groups[c] = [findPerson(x) for x in categories[c] if x in [y["name"] for y in folks]]
+        groups[c] = [get_maMPD(x) for x in groups[c]]
+    first_day = datetime.datetime(2011,1,1)
+    last_day = datetime.datetime(newest.year,newest.month,newest.day)
+    days = [first_day]
+    while days[-1] != last_day:
+        days.append(days[-1] + datetime.timedelta(days=1))
+    data = {}
+    for g in groups.keys():
+        data[g] = []
+        for day in days:
+            value = 0
+            for pair in groups[g]:
+                dic = dict(zip(pair[0],pair[1]))
+                if day in dic.keys(): value += dic[day]
+            data[g].append(value)
+    plots= []
+    for d in data.keys():
+        plt.plot(days,data[d],label=d)
+    plt.legend()
+    ticks = [x for x in days if x.month == 1 and x.day == 1]
+    tick_labels = [str(x.day) + "/" + str(x.month) + "/" + str(x.year)[2:] for x in ticks]
+    plt.xticks(ticks, tick_labels)
+    plt.show()
+    
