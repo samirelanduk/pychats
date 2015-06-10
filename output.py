@@ -143,6 +143,7 @@ def outputPerson(person):
     html += "<head>\n"
     html += "\t<title>" + person["name"] + "</title>\n"
     html += """\t<style>body {font-family: Georgia; text-align: center;}
+svg {display: block; margin-left: auto; margin-right: auto;}
 h1, h2, h3, h4 {text-align: center;}
 h4 {margin-bottom: 3px;}
 #nav {display: inline-block; padding: 30px; border-radius: 25px; margin-bottom: 30px; border: 1px solid black; margin-left: auto; margin-right: auto;}
@@ -167,7 +168,6 @@ p.fade {opacity: 0.3;}</style>\n"""
     html += "\t<h1>" + person["name"] + "</h1>\n"
 
     html += "<table id='charts'>\n"
-    html += "<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>\n"
     html += "<tr>\n"
 
     #Add a piechart
@@ -181,7 +181,7 @@ p.fade {opacity: 0.3;}</style>\n"""
     plt.pie([x for x in [data["SMS"], data["whatsapp"], data["facebook"]] if x != 0], labels=[x for x in ["SMS", "whatsapp", "facebook"] if data[x] != 0], colors=color,)
     plt.savefig("svg.svg")
     pie_svg = getSVG()
-    html += "<td></td><td></td><td colspan='4' style='padding:30px;'>" + pie_svg + "</td><td></td><td></td></tr>\n"
+    html += "<td colspan='4' style='padding:30px;'>" + pie_svg + "</td></tr>\n"
     plt.clf()
     
     #Add days bar graph
@@ -196,7 +196,7 @@ p.fade {opacity: 0.3;}</style>\n"""
     plt.ylabel("Messages (chars)")
     plt.savefig("svg.svg")
     bar1_svg = getSVG()
-    html += "<td colspan='4'>" + bar1_svg + "</td>\n"
+    html += "<tr><td colspan='4'>" + bar1_svg + "</td></tr>\n"
     plt.clf()
 
     #Add days line graph
@@ -209,9 +209,8 @@ p.fade {opacity: 0.3;}</style>\n"""
     plt.ylabel("Messages (chars)")
     plt.savefig("svg.svg")
     line1_svg = getSVG()    
-    html += "<td colspan='4'>" + line1_svg + "</td>\n"
+    html += "<tr><td colspan='4'>" + line1_svg + "</td></tr>\n"
     plt.clf()
-    html += "</tr>\n"
 
     html += "<tr>\n"
 
@@ -227,7 +226,7 @@ p.fade {opacity: 0.3;}</style>\n"""
     plt.ylabel("Messages (chars)")
     plt.savefig("svg.svg")
     bar2_svg = getSVG()
-    html += "<td colspan='4'>" + bar2_svg + "</td>\n"
+    html += "<td colspan='4'>" + bar2_svg + "</td></tr>\n"
     plt.clf()
 
     #Add months line graph
@@ -240,9 +239,8 @@ p.fade {opacity: 0.3;}</style>\n"""
     plt.ylabel("Messages (chars)")
     plt.savefig("svg.svg")
     line2_svg = getSVG()
-    html += "<td colspan='4'>" + line2_svg + "</td>\n"
+    html += "<tr><td colspan='4'>" + line2_svg + "</td></tr>\n"
     plt.clf()
-    html += "</tr>\n"
     html += "</table>\n"
     
     #Rejigger the messages into years, months and days
@@ -351,4 +349,5 @@ def compareGroups():
     tick_labels = [str(x.day) + "/" + str(x.month) + "/" + str(x.year)[2:] for x in ticks]
     plt.xticks(ticks, tick_labels)
     plt.show()
+    
     
