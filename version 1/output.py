@@ -1,6 +1,7 @@
 import pickle
 import datetime
 import calendar
+import matplotlib
 import matplotlib.pyplot as plt
 import os
 
@@ -99,7 +100,7 @@ def get_MPD(person):
 def get_maMPD(person):
     days, data = get_MPD(person)
     avg_data = []
-    data = ([0] * 30) + data
+    data = ([0] * 29) + data
     for x in range(len(days)):
         avg_data.append(sum(data[x:x+30])/30)
     
@@ -131,7 +132,7 @@ def get_MPM(person):
 def get_maMPM(person):
     months, data = get_MPM(person)
     avg_data = []
-    data = ([0] * 3) + data
+    data = ([0] * 2) + data
     for x in range(len(months)):
         avg_data.append(sum(data[x:x+3])/3)
     
@@ -201,7 +202,7 @@ p.fade {opacity: 0.3;}</style>\n"""
 
     #Add days line graph
     days, data = get_maMPD(person)
-    plt.plot(days, data, color="r")
+    plt.plot(days, data, color="#2e0854")
     plt.xticks(ticks, tick_labels)
     plt.grid(b=True, which='major', color='k', linestyle='--')
     plt.title("Messages per day (Moving average)")
@@ -216,7 +217,7 @@ p.fade {opacity: 0.3;}</style>\n"""
 
     #Add months bar graph
     months, data = get_MPM(person)
-    plt.bar(months, data, color="c", width=15)
+    plt.bar(months, data, color="#00ff00", width=15)
     ticks = [x for x in days if x.month == 1 and x.day == 1]
     tick_labels = [str(x.day) + "/" + str(x.month) + "/" + str(x.year)[2:] for x in ticks]
     plt.xticks(ticks, tick_labels)
