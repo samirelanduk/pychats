@@ -3,40 +3,6 @@ import os
 import requests
 import pickle
 
-fbIDs = {}
-if "fbIDs.p" in os.listdir("."):
-    f = open("fbIDs.p", "rb")
-    fbIDs = pickle.load(f)
-    f.close()
-
-def get_facebook_name(fbID):
-    name = ""
-    if False:#"@" in fbID:
-        #It's an @ address. Has it already been encountered?
-        ID = fbID.split("@")[0]
-        if ID in fbIDs.keys():
-            #Yes it has, assign name
-            name = fbIDs[ID]
-        else:
-            #No it hasn't look it up
-            #print("Looking up " + fbID)
-            print("Sending a request for " + fbID + "...")
-            text = str(requests.get("http://graph.facebook.com/" + ID).text)
-            pairs = text[1:-1].split(",")
-            obj = {}
-            for p in pairs:
-                obj[p.split(":")[0][1:-1]] = p.split(":")[1][1:-1]
-            if "first_name" in obj.keys() and "last_name" in obj.keys():
-                name = obj["first_name"] + " " + obj["last_name"]
-                fbIDs[ID] = name
-            else:
-                name = fbID
-            #print("(It was " + name + ")")
-        return name
-    else:
-        #This is already a facebook name
-        return fbID
-
 def get_conversations(soup, name):
     """Take the soup of the facebook backup and return a list of conversation objects"""
 
@@ -47,11 +13,6 @@ def get_conversations(soup, name):
     print("There are %i conversations here." % len(conversation_divs))
 
     conversations = [Conversation(x) for x in conversation_divs]
-
-    #Update the locally stored fbIDs
-    f = open("fbIDs.p", "wb")
-    pickle.dump(fbIDs, f)
-    f.close()
 
     #Remove user's name from conversations
     for conversation in conversations:
@@ -66,7 +27,8 @@ def get_conversations(soup, name):
 class Conversation:
 
     def __init__(self, div):
-        self.members = [get_facebook_name(x) for x in div.contents[0].string.split(", ") if "@" not in x]
+        #Get a rough idea of the people in this conversation
+        self.members = [x for x in div.contents[0].string.split(", ") if "@" not in x]
 
         #Get the messages
         self.messages = []
@@ -75,12 +37,13 @@ class Conversation:
 
         #Only want messages since January 2011
         self.messages = [x for x in self.messages if x.time > datetime.datetime(2011,1,1)]
-        
+
         #Add names to members
         for message in self.messages:
             if message.sender not in self.members:
                 self.members.append(message.sender)
 
+        
 class FacebookMessage:
 
     def get_date(self):
@@ -96,7 +59,9 @@ class FacebookMessage:
 
     def __init__(self, divs):
         self.text = divs[1].text
-        self.sender = get_facebook_name(divs[0].find(attrs={"class":"user"}).text)
+        self.sender = divs[0].find(attrs={"class":"user"}).text
 
         self.facebook_time = divs[0].find(attrs={"class":"meta"}).text
         self.time = self.get_date()
+
+        self.weight = 0 #To be altered later
