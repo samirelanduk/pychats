@@ -1,4 +1,5 @@
-import datetime
+import copy
+import random
 
 def facebook_backup(file, my_name=""):
     from . import facebook
@@ -15,7 +16,6 @@ def facebook_backup(file, my_name=""):
 
     #Get conversations
     conversations = facebook.get_conversations(soup, my_name)
-    conversations = [x for x in conversations if len(x.messages) >= 4]
 
     #Divide into direct and group conversations
     directs = [x for x in conversations if len(x.members) == 1]
@@ -38,7 +38,17 @@ def facebook_backup(file, my_name=""):
         for message in person.messages:
             message.weight = 1
 
-    #
+    #Give each contact their group messages
+    for person in contacts:
+        for conv in groups:
+            if person.name in conv.members:
+                for message in conv.messages:
+                    new_message = copy.deepcopy(message)
+                    if new_message.sender == my_name or new_message.sender == person.name:
+                        new_message.weight = 1.0 / len(conv.members)
+                    else:
+                        new_message.weight = 0
+                    person.messages.append(new_message)
 
     #Sort everything
     backup.sort_contacts()
@@ -68,11 +78,18 @@ class Backup:
         for contact in self.contacts:
             contact.sort_messages()
 
-        #Sort contacts by number of chars
-        self.contacts = sorted(self.contacts, key = lambda k: k.chars)
+        #Sort contacts by score
+        self.contacts = sorted(self.contacts, key = lambda k: k.score)
         self.contacts.reverse()
 
+        #Assign the start and end points of the backup
         self.set_range()
+
+    def prime_for_markov(self):
+
+        #Make all contacts make themselves Markov-ready
+        for contact in self.contacts:
+            contact.prime_for_markov()
 
 class Contact:
 
@@ -81,7 +98,8 @@ class Contact:
         self.messages = []
         self.start_date = None
         self.end_date = None
-        self.chars = 0
+        self.score = 0
+        self.initial_distribution = []
 
     def sort_messages(self):
         #Get messages in right order
@@ -91,4 +109,24 @@ class Contact:
         self.start_date = self.messages[0].time
         self.end_date = self.messages[-1].time
 
-        self.chars = sum([len(x.text) for x in self.messages])
+        self.score = sum([len(x.text) * x.weight for x in self.messages])
+
+    def prime_for_markov(self):
+        for message in self.messages:
+            message.set_markov_words()
+
+        self.initial_distribution = [x.markov_words[0] for x in self.messages if len(x.markov_words) > 1 and x.sender == self.name]
+
+    def get_first_word(self):
+        if len(self.initial_distribution) != 0:
+            return random.choice(self.initial_distribution)
+
+
+class Message:
+
+    def __init__(self):
+        self.markov_words = []
+
+    def set_markov_words(self):
+        #This will do for now
+        self.markov_words = self.text.split(" ")

@@ -2,6 +2,7 @@ import datetime
 import os
 import requests
 import pickle
+from pychats import Message
 
 def get_conversations(soup, name):
     """Take the soup of the facebook backup and return a list of conversation objects"""
@@ -35,16 +36,22 @@ class Conversation:
         for x in range(int(len(div.contents[1:])/2)):
             self.messages.append(FacebookMessage(div.contents[1:][x*2:(x*2)+2]))
 
+        #Remove all messages by a '@' person
+        self.messages = [x for x in self.messages if "@" not in x.sender]
+
         #Only want messages since January 2011
         self.messages = [x for x in self.messages if x.time > datetime.datetime(2011,1,1)]
+
+        #Put them in the right order
+        self.messages.reverse()
 
         #Add names to members
         for message in self.messages:
             if message.sender not in self.members:
                 self.members.append(message.sender)
 
-        
-class FacebookMessage:
+
+class FacebookMessage(Message):
 
     def get_date(self):
         months = {"January":1, "February":2, "March":3, "April":4, "May":5, "June":6, "July":7, "August":8, "September":9, "October":10, "November":11, "December":12}
@@ -58,6 +65,8 @@ class FacebookMessage:
         return date
 
     def __init__(self, divs):
+        Message.__init__(self)
+
         self.text = divs[1].text
         self.sender = divs[0].find(attrs={"class":"user"}).text
 
