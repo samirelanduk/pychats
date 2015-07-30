@@ -124,23 +124,48 @@ class Contact:
         if len(self.initial_distribution) != 0:
             return random.choice(self.initial_distribution)
 
-    def get_next_word(self, current_word):
+    def get_second_word(self, first_word):
         possibles = []
-        for message in self.messages:
-            if current_word in message.markov_words:
+        for message in [x for x in self.messages if x.text != ""]:
+            x = 0
+            for word in message.markov_words[:-1]:
+                if word == first_word:
+                    possibles.append(message.markov_words[x+1])
+                x += 1
+
+        return random.choice(possibles)
+
+    def get_next_word(self, current_words):
+        #Build up a list of possible next words
+        possibles = []
+
+        #Try and get a next word based on current two words
+        for message in [x for x in self.messages if x.text != ""]:
+            x = 0
+            for word in message.markov_words[:-2]:
+                if word == current_words[0] and message.markov_words[x+1] == current_words[1]:
+                    possibles.append(message.markov_words[x+2])
+                x += 1
+
+        #If not possibele, get one based on most recent word only
+        if len(possibles) <= 1:
+            for message in [x for x in self.messages if x.text != ""]:
                 x = 0
-                for word in message.markov_words:
-                    if word == current_word:
+                for word in message.markov_words[:-1]:
+                    if word == current_words[1]:
                         possibles.append(message.markov_words[x+1])
                     x += 1
+
+        #Return a random possible word
         return random.choice(possibles)
 
     def generate_message(self):
         message = []
         message.append(self.get_first_word())
+        message.append(self.get_second_word(message[0]))
 
         while message[-1] != None:
-            message.append(self.get_next_word(message[-1]))
+            message.append(self.get_next_word(message[-2:]))
 
         return " ".join(message[:-1])
 
