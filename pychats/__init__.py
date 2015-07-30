@@ -53,6 +53,9 @@ def facebook_backup(file, my_name=""):
     #Sort everything
     backup.sort_contacts()
 
+    #Make Markov-ready
+    backup.prime_for_markov()
+
     return backup
 
 class Backup:
@@ -121,6 +124,26 @@ class Contact:
         if len(self.initial_distribution) != 0:
             return random.choice(self.initial_distribution)
 
+    def get_next_word(self, current_word):
+        possibles = []
+        for message in self.messages:
+            if current_word in message.markov_words:
+                x = 0
+                for word in message.markov_words:
+                    if word == current_word:
+                        possibles.append(message.markov_words[x+1])
+                    x += 1
+        return random.choice(possibles)
+
+    def generate_message(self):
+        message = []
+        message.append(self.get_first_word())
+
+        while message[-1] != None:
+            message.append(self.get_next_word(message[-1]))
+
+        return " ".join(message[:-1])
+
 
 class Message:
 
@@ -129,4 +152,4 @@ class Message:
 
     def set_markov_words(self):
         #This will do for now
-        self.markov_words = self.text.split(" ")
+        self.markov_words = self.text.split(" ") + [None]
