@@ -1,6 +1,5 @@
 import datetime
 import os
-import requests
 import pickle
 from pychats import Message
 

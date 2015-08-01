@@ -1,5 +1,6 @@
 import copy
 import random
+import datetime
 
 def facebook_backup(file, my_name=""):
     from . import facebook
@@ -169,6 +170,21 @@ class Contact:
 
         return " ".join(message[:-1])
 
+    def add_chart_data(self):
+        #Get days for which there is data
+        self.days = [self.start_date.date()]
+        while self.days[-1] != self.end_date.date():
+            self.days.append(self.days[-1] + datetime.timedelta(days=1))
+
+        #Get months for which there is data
+        self.months = [get_month(self.start_date)]
+        while self.months[-1] != get_month(self.end_date):
+            self.months.append(add_month(self.months[-1]))
+
+        #Add chars per days
+        self.chars_per_day = [sum([len(m.text) * m.weight for m in self.messages if m.time.date() == day]) for day in self.days]
+
+
 
 class Message:
 
@@ -178,3 +194,18 @@ class Message:
     def set_markov_words(self):
         #This will do for now
         self.markov_words = self.text.split(" ") + [None]
+        self.markov_words = [x for x in self.markov_words if x != ""]
+
+
+
+
+
+
+def get_month(d):
+    return datetime.datetime(d.year, d.month, 1)
+
+def add_month(d):
+    if d.month == 12:
+        return datetime.datetime(d.year+1, 1, 1)
+    else:
+        return datetime.datetime(d.year, d.month+1, 1)
