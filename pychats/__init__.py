@@ -2,7 +2,7 @@ import copy
 import random
 import datetime
 
-def facebook_backup(file, my_name=""):
+def get_facebook_backup(file, my_name=""):
     """Take a file connection to messages.htm, and make a Backup object of it"""
     from . import facebook
     from bs4 import BeautifulSoup
