@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name="pychats",
-      version="1.0.0",
+      version="1.0.1",
       description="Conversation analytics",
       long_description="Tools for accessing conversation backups from various sources, and analysing said conversations.",
       url="https://github.com/samirelanduk/pychats",
