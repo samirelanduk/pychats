@@ -25,7 +25,7 @@ def get_conversations(soup, name):
     return conversations
 
 class Conversation:
-
+    """A conversation object from the facebook backup, with any number of members"""
     def __init__(self, div):
         #Get a rough idea of the people in this conversation
         self.members = [x for x in div.contents[0].string.split(", ") if "@" not in x]
@@ -51,17 +51,7 @@ class Conversation:
 
 
 class FacebookMessage(Message):
-
-    def get_date(self):
-        months = {"January":1, "February":2, "March":3, "April":4, "May":5, "June":6, "July":7, "August":8, "September":9, "October":10, "November":11, "December":12}
-        parts = self.facebook_time.split()
-        y = int(parts[3])
-        m = int(months[parts[2]])
-        d = int(parts[1])
-        h = int(parts[5].split(":")[0])
-        mn = int(parts[5].split(":")[1])
-        date = datetime.datetime(y,m,d,h,mn)
-        return date
+    """A Facebook specific message"""
 
     def __init__(self, divs):
         Message.__init__(self)
@@ -73,3 +63,15 @@ class FacebookMessage(Message):
         self.time = self.get_date()
 
         self.weight = 0 #To be altered later
+
+    def get_date(self):
+        """Get the actual date from Facebook formated date"""
+        months = {"January":1, "February":2, "March":3, "April":4, "May":5, "June":6, "July":7, "August":8, "September":9, "October":10, "November":11, "December":12}
+        parts = self.facebook_time.split()
+        y = int(parts[3])
+        m = int(months[parts[2]])
+        d = int(parts[1])
+        h = int(parts[5].split(":")[0])
+        mn = int(parts[5].split(":")[1])
+        date = datetime.datetime(y,m,d,h,mn)
+        return date

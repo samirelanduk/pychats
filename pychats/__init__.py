@@ -3,6 +3,7 @@ import random
 import datetime
 
 def facebook_backup(file, my_name=""):
+    """Take a file connection to messages.htm, and make a Backup object of it"""
     from . import facebook
     from bs4 import BeautifulSoup
 
@@ -60,13 +61,14 @@ def facebook_backup(file, my_name=""):
     return backup
 
 class Backup:
-
+    """A collection of contacts and their associated messages"""
     def __init__(self, contacts):
         self.contacts = contacts
         self.start_date = None
         self.end_date = None
 
     def get_contact_by_name(self, name):
+        """Get contact with specified full name"""
         for contact in self.contacts:
             if contact.name == name:
                 return contact
@@ -78,6 +80,7 @@ class Backup:
         self.end_date = max([x.start_date for x in self.contacts])
 
     def sort_contacts(self):
+        """Prep all contacts (sort their messages) and sort them, and update date range"""
         #Put all contact messages in correct order
         for contact in self.contacts:
             contact.sort_messages()
@@ -90,13 +93,12 @@ class Backup:
         self.set_range()
 
     def prime_for_markov(self):
-
-        #Make all contacts make themselves Markov-ready
+        """Make all contacts make themselves Markov-ready"""
         for contact in self.contacts:
             contact.prime_for_markov()
 
 class Contact:
-
+    """A person with whom you have spoken to"""
     def __init__(self, name):
         self.name = name
         self.messages = []
@@ -106,6 +108,7 @@ class Contact:
         self.initial_distribution = []
 
     def sort_messages(self):
+        """Sort messages by date"""
         #Get messages in right order
         self.messages = sorted(self.messages, key = lambda k: k.time)
 
@@ -116,16 +119,19 @@ class Contact:
         self.score = sum([len(x.text) * x.weight for x in self.messages])
 
     def prime_for_markov(self):
+        """Assign markov words to each message, and create an initial state distribution"""
         for message in self.messages:
             message.set_markov_words()
 
         self.initial_distribution = [x.markov_words[0] for x in self.messages if len(x.markov_words) > 1 and x.sender == self.name]
 
     def get_first_word(self):
+        """Get the first work in a Markov sentence"""
         if len(self.initial_distribution) != 0:
             return random.choice(self.initial_distribution)
 
     def get_second_word(self, first_word):
+        """Get the second word in a Markov sentence"""
         possibles = []
         for message in [x for x in self.messages if x.text != ""]:
             x = 0
@@ -137,6 +143,7 @@ class Contact:
         return random.choice(possibles)
 
     def get_next_word(self, current_words):
+        """Get the next word in a Markov sentence"""
         #Build up a list of possible next words
         possibles = []
 
@@ -161,6 +168,7 @@ class Contact:
         return random.choice(possibles)
 
     def generate_message(self):
+        """Generate a message using Markov chains, based on exisiting messages"""
         message = []
         message.append(self.get_first_word())
         message.append(self.get_second_word(message[0]))
@@ -171,6 +179,7 @@ class Contact:
         return " ".join(message[:-1])
 
     def add_chart_data(self):
+        """(For future versions)"""
         #Get days for which there is data
         self.days = [self.start_date.date()]
         while self.days[-1] != self.end_date.date():
@@ -187,11 +196,12 @@ class Contact:
 
 
 class Message:
-
+    """A generic message, of any kind"""
     def __init__(self):
         self.markov_words = []
 
     def set_markov_words(self):
+        """Take the message and break into words for Markov purposes"""
         #This will do for now
         self.markov_words = self.text.split(" ") + [None]
         self.markov_words = [x for x in self.markov_words if x != ""]
@@ -202,9 +212,11 @@ class Message:
 
 
 def get_month(d):
+    """Take a datetime and return a datetime with only year and month info"""
     return datetime.datetime(d.year, d.month, 1)
 
 def add_month(d):
+    """Add one calendar month to any datetime"""
     if d.month == 12:
         return datetime.datetime(d.year+1, 1, 1)
     else:
