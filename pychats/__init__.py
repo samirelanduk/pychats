@@ -1,6 +1,7 @@
 import copy
 import random
 import datetime
+from .outputs import BarChart
 
 def get_facebook_backup(file, my_name=""):
     """Take a file connection to messages.htm, and make a Backup object of it"""
@@ -178,20 +179,34 @@ class Contact:
 
         return " ".join(message[:-1])
 
-    def add_chart_data(self):
+    def add_charts(self):
         """(For future versions)"""
+
         #Get days for which there is data
         self.days = [self.start_date.date()]
         while self.days[-1] != self.end_date.date():
             self.days.append(self.days[-1] + datetime.timedelta(days=1))
+
+        #Get day ticks
+        if self.end_date - self.start_date <= datetime.timedelta(days=365):
+            self.day_ticks = [x for x in self.days if x.day == 1]
+            self.day_width = 0.9
+        else:
+            self.day_ticks = [x for x in self.days if x.month == 1 and x.day == 1]
+            self.day_width = 2
+        self.day_labels = [str(x.day) + "/" + str(x.month) + "/" + str(x.year)[2:] for x in self.day_ticks]
 
         #Get months for which there is data
         self.months = [get_month(self.start_date)]
         while self.months[-1] != get_month(self.end_date):
             self.months.append(add_month(self.months[-1]))
 
-        #Add chars per days
-        self.chars_per_day = [sum([len(m.text) * m.weight for m in self.messages if m.time.date() == day]) for day in self.days]
+        self.add_chars_per_day()
+
+    def add_chars_per_day(self):
+        chars_per_day = [sum([len(m.text) * m.weight for m in self.messages if m.time.date() == day]) for day in self.days]
+        self.chars_per_day = BarChart(self.days, chars_per_day, color="#FF0000", edgecolor="none", width=self.day_width, xlabel="Date", xticks=self.day_ticks, xticklabels=self.day_labels, ylabel="Characters per day", title="%s - Characters per day over time" % self.name)
+
 
 
 
