@@ -201,12 +201,16 @@ class Contact:
         while self.months[-1] != get_month(self.end_date):
             self.months.append(add_month(self.months[-1]))
 
-        self.add_chars_per_day()
+        self._add_chars_per_day()
+        self._add_chars_per_month()
 
-    def add_chars_per_day(self):
+    def _add_chars_per_day(self):
         chars_per_day = [sum([len(m.text) * m.weight for m in self.messages if m.time.date() == day]) for day in self.days]
         self.chars_per_day = BarChart(self.days, chars_per_day, color="#FF0000", edgecolor="none", width=self.day_width, xlabel="Date", xticks=self.day_ticks, xticklabels=self.day_labels, ylabel="Characters per day", title="%s - Characters per day over time" % self.name)
 
+    def _add_chars_per_month(self):
+        chars_per_month = [sum([len(m.text) * m.weight for m in self.messages if get_month(m.time) == month]) for month in self.months]
+        self.chars_per_month = BarChart(self.months, chars_per_month, color="#00FF00", edgecolor="b", width=25, xlabel="Date", xticks=self.day_ticks, xticklabels=self.day_labels, ylabel="Characters per month", title="%s - Characters per month over time" % self.name)
 
 
 
