@@ -53,6 +53,8 @@ class Conversation:
 class FacebookMessage(Message):
     """A Facebook specific message"""
 
+    message_type = "Facebook"
+
     def __init__(self, divs):
         Message.__init__(self)
 

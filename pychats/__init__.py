@@ -1,7 +1,7 @@
 import copy
 import random
 import datetime
-from .outputs import BarChart
+from .outputs import BarChart, LineChart, PieChart
 
 def get_facebook_backup(file, my_name=""):
     """Take a file connection to messages.htm, and make a Backup object of it"""
@@ -99,7 +99,7 @@ class Backup:
             contact.prime_for_markov()
 
 class Contact:
-    """A person with whom you have spoken to"""
+    """A person with whom you have spoken"""
     def __init__(self, name):
         self.name = name
         self.messages = []
@@ -107,6 +107,8 @@ class Contact:
         self.end_date = None
         self.score = 0
         self.initial_distribution = []
+        self.chars_per_day = []
+        self.chars_per_month = []
 
     def sort_messages(self):
         """Sort messages by date"""
@@ -178,6 +180,7 @@ class Contact:
             message.append(self.get_next_word(message[-2:]))
 
         return " ".join(message[:-1])
+    #End Markov methods
 
     def add_charts(self):
         """(For future versions)"""
@@ -203,16 +206,35 @@ class Contact:
 
         self._add_chars_per_day()
         self._add_chars_per_month()
+        self._add_days_trend()
+        self._add_months_trend()
+        self._add_messages_piechart()
 
     def _add_chars_per_day(self):
-        chars_per_day = [sum([len(m.text) * m.weight for m in self.messages if m.time.date() == day]) for day in self.days]
-        self.chars_per_day = BarChart(self.days, chars_per_day, color="#FF0000", edgecolor="none", width=self.day_width, xlabel="Date", xticks=self.day_ticks, xticklabels=self.day_labels, ylabel="Characters per day", title="%s - Characters per day over time" % self.name)
+        self.chars_per_day = [sum([len(m.text) * m.weight for m in self.messages if m.time.date() == day]) for day in self.days]
+        self.chars_per_day_chart = BarChart(self.days, self.chars_per_day, color="#FF0000", edgecolor="none", width=self.day_width, xlabel="Date", xticks=self.day_ticks, xticklabels=self.day_labels, ylabel="Characters per day", title="%s - Characters per day over time" % self.name)
 
     def _add_chars_per_month(self):
-        chars_per_month = [sum([len(m.text) * m.weight for m in self.messages if get_month(m.time) == month]) for month in self.months]
-        self.chars_per_month = BarChart(self.months, chars_per_month, color="#00FF00", edgecolor="b", width=25, xlabel="Date", xticks=self.day_ticks, xticklabels=self.day_labels, ylabel="Characters per month", title="%s - Characters per month over time" % self.name)
+        self.chars_per_month = [sum([len(m.text) * m.weight for m in self.messages if get_month(m.time) == month]) for month in self.months]
+        self.chars_per_month_chart = BarChart(self.months, self.chars_per_month, color="#00FF00", edgecolor="b", width=25, xlabel="Date", xticks=self.day_ticks, xticklabels=self.day_labels, ylabel="Characters per month", title="%s - Characters per month over time" % self.name)
 
+    def _add_days_trend(self):
+        subset = 30
+        self.days_MA = get_moving_average(self.chars_per_day, subset)
+        self.days_trend = LineChart(self.days[subset-1:], self.days_MA, color="#FF0000", linewidth=2, xlabel="Date", xticks=self.day_ticks, xticklabels=self.day_labels, ylabel="Chars per day (moving average)", title="%s - Characters per day over time (moving average)" % self.name)
 
+    def _add_months_trend(self):
+        subset = 3
+        self.months_MA = get_moving_average(self.chars_per_month, subset)
+        self.months_trend = LineChart(self.months[subset-1:], self.months_MA, color="#00FF00", linewidth=2, xlabel="Date", xticks=self.day_ticks, xticklabels=self.day_labels, ylabel="Chars per month (moving average)", title="%s - Characters per month over time (moving average)" % self.name)
+
+    def _add_messages_piechart(self):
+        message_types = list(set([x.message_type for x in self.messages]))
+        pie_data = {x:0 for x in message_types}
+        for message in self.messages:
+            pie_data[message.message_type] += message.weight
+
+        self.messages_pie = PieChart([int(pie_data[x]) for x in message_types], message_types)
 
 class Message:
     """A generic message, of any kind"""
@@ -240,3 +262,13 @@ def add_month(d):
         return datetime.datetime(d.year+1, 1, 1)
     else:
         return datetime.datetime(d.year, d.month+1, 1)
+
+def get_moving_average(data, subset):
+    """Takes a sequence of numbers and returns moving average data. The returned sequence will be (subset - 1) shorter than the incoming sequence"""
+    moving_average = []
+    index = subset - 1
+    for value in data[index:]:
+        moving_average.append(sum(data[index-(subset-1):index+1])/float(subset))
+        index += 1
+
+    return moving_average
