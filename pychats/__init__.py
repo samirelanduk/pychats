@@ -1,7 +1,7 @@
 import copy
 import random
 import datetime
-from .outputs import BarChart, LineChart, PieChart
+from .outputs import BarChart, LineChart, PieChart, Figure
 
 def get_facebook_backup(file, my_name=""):
     """Take a file connection to messages.htm, and make a Backup object of it"""
@@ -209,6 +209,7 @@ class Contact:
         self._add_days_trend()
         self._add_months_trend()
         self._add_messages_piechart()
+        self.multi_chart = Figure(2, 2, [self.chars_per_day_chart, self.days_trend, self.chars_per_month_chart, self.months_trend])
 
     def _add_chars_per_day(self):
         self.chars_per_day = [sum([len(m.text) * m.weight for m in self.messages if m.time.date() == day]) for day in self.days]
@@ -236,6 +237,11 @@ class Contact:
 
         self.messages_pie = PieChart([int(pie_data[x]) for x in message_types], message_types)
 
+    def produce_chatlog(self, charts=True):
+        pass
+
+
+        
 class Message:
     """A generic message, of any kind"""
     def __init__(self):

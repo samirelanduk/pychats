@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+#This has some serious issues regarding code-reuse - there HAS to be a more elegant way, especially for the figure. It will do for now though
 
 class Chart:
 
@@ -79,4 +80,32 @@ class PieChart(Chart):
         return fig
 
 
-class Figure:
+class Figure(Chart):
+
+    def __init__(self, rows, columns, charts):
+        Chart.__init__(self)
+        self.rows = rows
+        self.columns = columns
+        self.charts = charts
+
+    def _generate(self):
+        fig = plt.figure()
+
+        chart_no = 1
+        for chart in self.charts:
+            plt.subplot(self.rows, self.columns, chart_no)
+            if isinstance(chart, BarChart):
+                plt.bar(chart.x_data, chart.y_data, color=chart.color, edgecolor=chart.edgecolor, width=chart.width)
+            elif isinstance(chart, LineChart):
+                plt.plot(chart.x_data, chart.y_data, color=chart.color, linewidth=chart.linewidth)
+            elif isinstance(chart, PieChart):
+                plt.pie(chart.pie_data, labels=chart.pie_labels)
+                plt.axis("equal")
+            if isinstance(chart, BarChart) or isinstance(chart, LineChart):
+                plt.xlabel(chart.xlabel)
+                plt.xticks(chart.xticks, chart.xticklabels)
+                plt.ylabel(chart.ylabel)
+                plt.title(chart.title)
+                plt.grid(b=True, which='major', color='k', linestyle='--')
+            chart_no += 1
+        return fig
