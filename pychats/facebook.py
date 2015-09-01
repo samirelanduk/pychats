@@ -3,7 +3,7 @@ import os
 import pickle
 from pychats import Message
 
-def get_conversations(soup, name):
+def get_conversations(soup, my_name):
     """Take the soup of the facebook backup and return a list of conversation objects"""
 
     #Go through the soup and get all the divs which represent a conversation
@@ -12,12 +12,12 @@ def get_conversations(soup, name):
         conversation_divs += div.contents
     print("There are %i conversations here." % len(conversation_divs))
 
-    conversations = [Conversation(x) for x in conversation_divs]
+    conversations = [Conversation(x, my_name) for x in conversation_divs]
 
     #Remove user's name from conversations
     for conversation in conversations:
-        while name in conversation.members:
-            conversation.members.remove(name)
+        while my_name in conversation.members:
+            conversation.members.remove(my_name)
 
     #Remove conversations with no one else in
     conversations = [x for x in conversations if len(x.members) >= 1]
@@ -26,14 +26,14 @@ def get_conversations(soup, name):
 
 class Conversation:
     """A conversation object from the facebook backup, with any number of members"""
-    def __init__(self, div):
+    def __init__(self, div, my_name):
         #Get a rough idea of the people in this conversation
         self.members = [x for x in div.contents[0].string.split(", ") if "@" not in x]
 
         #Get the messages
         self.messages = []
         for x in range(int(len(div.contents[1:])/2)):
-            self.messages.append(FacebookMessage(div.contents[1:][x*2:(x*2)+2]))
+            self.messages.append(FacebookMessage(div.contents[1:][x*2:(x*2)+2], my_name))
 
         #Remove all messages by a '@' person
         self.messages = [x for x in self.messages if "@" not in x.sender]
@@ -55,7 +55,7 @@ class FacebookMessage(Message):
 
     message_type = "Facebook"
 
-    def __init__(self, divs):
+    def __init__(self, divs, my_name):
         Message.__init__(self)
 
         self.text = divs[1].text
@@ -63,6 +63,8 @@ class FacebookMessage(Message):
 
         self.facebook_time = divs[0].find(attrs={"class":"meta"}).text
         self.time = self.get_date()
+
+        self.from_me = True if self.sender == my_name else False
 
         self.weight = 0 #To be altered later
 
