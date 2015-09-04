@@ -2,7 +2,7 @@ import copy
 import random
 import datetime
 import calendar
-from .outputs import BarChart, LineChart, PieChart, Figure
+from .outputs import BarChart, LineChart, PieChart, MultiLineChart, Figure
 
 def get_facebook_backup(file, my_name=""):
     """Take a file connection to messages.htm, and make a Backup object of it"""
@@ -99,6 +99,12 @@ class Backup:
         for contact in self.contacts:
             contact.prime_for_markov()
 
+    def compare_contacts(self, contacts, colors=None):
+        for contact in contacts:
+            if "days_trend" not in contact.__dict__.keys(): contact.add_charts()
+        chart = MultiLineChart([x.days_trend for x in contacts], colors=colors, labels=[x.name for x in contacts], xlabel="Date", ylabel="Chars per day (Moving average)", linewidth=2, title="Comparison of multiple contacts")
+        return chart
+
 class Contact:
     """A person with whom you have spoken"""
     def __init__(self, name):
@@ -184,7 +190,7 @@ class Contact:
     #End Markov methods
 
     def add_charts(self):
-        """(For future versions)"""
+        """Generate the five charts for this contact"""
 
         #Get days for which there is data
         self.days = [self.start_date.date()]
@@ -240,6 +246,7 @@ class Contact:
 
 
     def produce_chatlog(self, include_charts=True, dir=""):
+        """Generate a html representation of a contact's messages"""
         #Head
         html = "<html>"
         html += self._produce_head_html()
@@ -389,6 +396,7 @@ class Message:
         self.markov_words = [x for x in self.markov_words if x != ""]
 
     def to_tr(self):
+        """Produce html for this message to be slotted into a chatlog"""
         html = "<tr>"
         if self.from_me:
             #Make first two cells empty
