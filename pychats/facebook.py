@@ -73,9 +73,9 @@ class FacebookMessage(Message):
         months = {"January":1, "February":2, "March":3, "April":4, "May":5, "June":6, "July":7, "August":8, "September":9, "October":10, "November":11, "December":12}
         parts = self.facebook_time.split()
         y = int(parts[3])
-        m = int(months[parts[2]])
-        d = int(parts[1])
+        m = int(months[parts[1]])
+        d = int(parts[2].split(",")[0])
         h = int(parts[5].split(":")[0])
-        mn = int(parts[5].split(":")[1])
+        mn = int(parts[5].split(":")[1][:-2])
         date = datetime.datetime(y,m,d,h,mn)
         return date
