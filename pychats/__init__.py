@@ -4,7 +4,13 @@ class ChatLog:
     """A collection of contacts and their messages"""
 
     def __init__(self, contacts):
-        self.contacts = sorted(contacts, key=lambda k: k.score)
+        self.contacts = sorted(contacts, key=lambda k: k.score, reverse=True)
+        self.messages = []
+        for contact in self.contacts:
+            self.messages += contact.messages
+        self.messages = sorted(self.messages, key=lambda k: k.datetime)
+        self.start_date =  min([c.start_date for c in self.contacts])
+        self.end_date = max([c.end_date for c in self.contacts])
 
 
 
@@ -22,6 +28,8 @@ class Contact:
     def __init__(self, name, messages):
         self.name = name
         self.messages = sorted(messages, key=lambda k: k.datetime)
+        for message in self.messages:
+            message.contact = self
         self.start_date = min([m.datetime for m in self.messages])
         self.end_date = max([m.datetime for m in self.messages])
         self.score = sum([m.score for m in self.messages])
@@ -30,14 +38,32 @@ class Contact:
 
 
 class Message:
-    """A message, between ourselves and at least one other person."""
+    """A message, between ourselves and at least one other person.
 
-    def __init__(self, text, datetime, from_me, weight=1):
+    A message only makes sense in the context of its owner - an identical message
+    might appear in two contacts, with different wights in each."""
+
+    def __init__(self, text, datetime, from_me, from_them, sender_name=None, weight=1):
         self.text = text
         self.datetime = datetime
         self.from_me = from_me
+        self.from_them = from_them
         self.weight = weight
         self.score = len(self.text) * self.weight
+
+        #If this is from someone other than us or the contact - there MUST be a
+        #name. If it is from us or the contact, sender_name will be None regardless
+        #of what is passed
+        if not from_me and not from_them:
+            if sender_name:
+                self.sender_name = sender_name
+            else:
+                raise Exception(
+                 "Cannot create a message that is not from us or them, and has no name given."
+                )
+        else:
+            self.sender_name = None #Even if a sender_name argument is given
+
 
 
 
