@@ -1,4 +1,5 @@
 import datetime
+from markov import *
 
 class ChatLog:
     """A collection of contacts and their messages"""
@@ -22,10 +23,11 @@ class ChatLog:
 
 
 
-class Contact:
+class Contact(MarkovGenerator):
     """A person with whom we have spoken"""
 
     def __init__(self, name, messages):
+        MarkovGenerator.__init__(self, messages)
         self.name = name
         self.messages = sorted(messages, key=lambda k: k.datetime)
         for message in self.messages:
@@ -37,13 +39,14 @@ class Contact:
 
 
 
-class Message:
+class Message(MarkovEntity):
     """A message, between ourselves and at least one other person.
 
     A message only makes sense in the context of its owner - an identical message
     might appear in two contacts, with different wights in each."""
 
     def __init__(self, text, datetime, from_me, from_them, sender_name=None, weight=1):
+        MarkovEntity.__init__(self, text, from_them)
         self.text = text
         self.datetime = datetime
         self.from_me = from_me
@@ -63,8 +66,6 @@ class Message:
                 )
         else:
             self.sender_name = None #Even if a sender_name argument is given
-
-
 
 
     def __repr__(self):
