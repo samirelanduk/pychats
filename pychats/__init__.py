@@ -1,14 +1,17 @@
 import datetime
 from markov import *
+from htmlgen import *
 
 class ChatLog:
     """A collection of contacts and their messages"""
 
-    def __init__(self, contacts):
+    def __init__(self, contacts, my_name):
         self.contacts = sorted(contacts, key=lambda k: k.score, reverse=True)
+        self.my_name = my_name
         self.messages = []
         for contact in self.contacts:
             self.messages += contact.messages
+            contact.log = self
         self.messages = sorted(self.messages, key=lambda k: k.datetime)
         self.start_date =  min([c.start_date for c in self.contacts])
         self.end_date = max([c.end_date for c in self.contacts])
@@ -23,7 +26,7 @@ class ChatLog:
 
 
 
-class Contact(MarkovGenerator):
+class Contact(MarkovGenerator, HtmlGeneratingContact):
     """A person with whom we have spoken"""
 
     def __init__(self, name, messages):
@@ -39,11 +42,14 @@ class Contact(MarkovGenerator):
 
 
 
-class Message(MarkovEntity):
+class Message(MarkovEntity, HtmlGeneratingMessage):
     """A message, between ourselves and at least one other person.
 
     A message only makes sense in the context of its owner - an identical message
     might appear in two contacts, with different wights in each."""
+
+    name = "Generic"
+    color = "#777777"
 
     def __init__(self, text, datetime, from_me, from_them, sender_name=None, weight=1):
         MarkovEntity.__init__(self, text, from_them)

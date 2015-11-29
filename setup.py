@@ -10,4 +10,4 @@ setup(name="pychats",
       classifiers=["Development Status :: 4 - Beta",
                    "Programming Language :: Python :: 3"],
       packages=["pychats"],
-      install_requires=["beautifulsoup4", "matplotlib", "lxml"])
+      install_requires=["beautifulsoup4", "quickplots"])

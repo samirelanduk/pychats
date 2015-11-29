@@ -27,7 +27,7 @@ def get_facebook_chatlog(path, my_name, narrate=True):
     contacts = get_facebook_contacts(names, my_name, threads)
 
 
-    return ChatLog(contacts)
+    return ChatLog(contacts, my_name)
 
 
 
@@ -130,6 +130,7 @@ class FacebookThread:
 class FacebookMessage(Message):
     """A Facebook message"""
 
+    name = "Facebook"
     color = "#0000FF"
 
     def __init__(*args, **kwargs):

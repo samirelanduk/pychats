@@ -4,4 +4,4 @@ dist
 version 1
 Docs
 messages.htm
-
+*.html
