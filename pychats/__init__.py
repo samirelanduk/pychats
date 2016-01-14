@@ -1,8 +1,9 @@
 import datetime
-from markov import *
-from htmlgen import *
+from .markov import *
+from .htmlgen import *
+from .charts import *
 
-class ChatLog:
+class ChatLog(ChartGeneratingLog):
     """A collection of contacts and their messages"""
 
     def __init__(self, contacts, my_name):
@@ -26,7 +27,7 @@ class ChatLog:
 
 
 
-class Contact(MarkovGenerator, HtmlGeneratingContact):
+class Contact(MarkovGenerator, HtmlGeneratingContact, ChartGeneratingContact):
     """A person with whom we have spoken"""
 
     def __init__(self, name, messages):
@@ -46,7 +47,7 @@ class Message(MarkovEntity, HtmlGeneratingMessage):
     """A message, between ourselves and at least one other person.
 
     A message only makes sense in the context of its owner - an identical message
-    might appear in two contacts, with different wights in each."""
+    might appear in two contacts, with different weights in each."""
 
     name = "Generic"
     color = "#777777"
