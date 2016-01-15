@@ -40,7 +40,6 @@ class ChartGeneratingContact:
              edge_width=0,
              color=quickplots.COLORS[0]
             )
-            self.days_chart.y_limit = (0, self.days_chart.y_limit[1])
             return self.days_chart
 
         elif attribute == "days_average":
@@ -51,6 +50,43 @@ class ChartGeneratingContact:
             chart.title = "Moving average"
             self.days_average = chart
             return self.days_average
+
+        elif attribute == "months":
+            self.months = [get_month(min([m.datetime for m in self.messages]).date())]
+            while self.months[-1] < get_month(self.log.end_date.date()):
+                self.months.append(increment_month(self.months[-1]))
+            return self.months
+
+        elif attribute == "_month_tick_labels":
+            self._month_tick_labels = [
+             datetime.datetime.strftime(m, "%b ''%y") for m in self._day_ticks]
+            return self._month_tick_labels
+
+        elif attribute == "months_chart":
+            series = [(d, sum([m.score for m in self.messages
+             if get_month(m.datetime.date()) == get_month(d)]))
+              for d in self.months]
+            self.months_chart = quickplots.BarChart(
+             series,
+             series_name=self.name,
+             title=self.name + " (characters per month)",
+             x_ticks=self._day_ticks,
+             x_tick_labels=self._month_tick_labels,
+             x_label="Date",
+             y_label="Characters",
+             bar_width=2628333,
+             color=quickplots.COLORS[0]
+            )
+            return self.months_chart
+
+        elif attribute == "months_average":
+            chart = self.months_chart.generate_moving_average(n=3, use_start=True)
+            chart.series = [(chart.series[0][0].dt - datetime.timedelta(days=1), 0)] + chart.series
+            chart.color = quickplots.COLORS[0]
+            chart.x_ticks = list(zip(self._day_ticks, self._month_tick_labels))
+            chart.title = "Moving average"
+            self.months_average = chart
+            return self.months_average
         else:
             raise AttributeError("No attribute %s" % attribute)
 
@@ -72,3 +108,15 @@ class ChartGeneratingLog:
         return quickplots.MultiSeriesAxisChart(charts,
          x_ticks=list(set([(t.value.value, t.label) for t in x_ticks])),
          legend=True)
+
+
+
+def get_month(dt):
+    return datetime.datetime(dt.year, dt.month, 1).date()
+
+
+def increment_month(dt):
+    year = dt.year + 1 if dt.month == 12 else dt.year
+    month = 1 if dt.month == 12 else dt.month + 1
+    day = dt.day
+    return datetime.date(year, month, day)
