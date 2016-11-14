@@ -1,13 +1,22 @@
 from distutils.core import setup
 
 setup(name="pychats",
-      version="1.1.2",
+      version="2.0.0",
       description="Conversation analytics",
       long_description="Tools for accessing conversation backups from various sources, and analysing said conversations.",
-      url="http://samireland.com/computing/pychats",
+      url="pychats.readthedocs.io",
       author="Sam Ireland",
-      author_email="sam.ireland.uk@gmail.com",
+      author_email="mail@samireland.com",
       classifiers=["Development Status :: 4 - Beta",
-                   "Programming Language :: Python :: 3"],
+                   "Intended Audience :: Other Audience",
+                   "License :: OSI Approved :: MIT License",
+                   "Topic :: Communications",
+                   "Programming Language :: Python :: 3",
+                   "Programming Language :: Python :: 3.0",
+                   "Programming Language :: Python :: 3.1",
+                   "Programming Language :: Python :: 3.2",
+                   "Programming Language :: Python :: 3.3",
+                   "Programming Language :: Python :: 3.4",
+                   "Programming Language :: Python :: 3.5",],
       packages=["pychats"],
-      install_requires=["beautifulsoup4", "quickplots"])
+      install_requires=[])

@@ -1,10 +1,8 @@
-test.py
-MANIFEST
+__pycache__
+*.pyc
+.DS_Store
+build
+_static
+_templates
 dist
-version 1
-Docs
-messages.htm
-*.html
-pychats/__pychache__
-ui.py
-Documentation.docx
+*.egg-info
