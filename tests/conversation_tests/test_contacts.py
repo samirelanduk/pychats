@@ -11,3 +11,8 @@ class ContactCreationTests(TestCase):
     def test_contact_name_must_be_str(self):
         with self.assertRaises(TypeError):
             Contact(111)
+
+
+    def test_contacts_repr(self):
+        contact = Contact("Marvin Goodwright")
+        self.assertEqual(str(contact), "<Contact: Marvin Goodwright>")

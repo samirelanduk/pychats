@@ -4,3 +4,7 @@ class Contact:
         if not isinstance(name, str):
             raise TypeError("name must be str, not '%s'" % name)
         self._name = name
+
+
+    def __repr__(self):
+        return "<Contact: %s>" % self._name
