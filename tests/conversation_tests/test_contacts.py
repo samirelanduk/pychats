@@ -16,3 +16,11 @@ class ContactCreationTests(TestCase):
     def test_contacts_repr(self):
         contact = Contact("Marvin Goodwright")
         self.assertEqual(str(contact), "<Contact: Marvin Goodwright>")
+
+
+
+class ContactPropertiesTests(TestCase):
+
+    def test_contact_properties(self):
+        contact = Contact("Marvin Goodwright")
+        self.assertIs(contact._name, contact.name())

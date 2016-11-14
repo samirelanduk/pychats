@@ -8,3 +8,7 @@ class Contact:
 
     def __repr__(self):
         return "<Contact: %s>" % self._name
+
+
+    def name(self):
+        return self._name
