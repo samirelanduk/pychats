@@ -23,6 +23,33 @@ class MessageCreationTests(MessageTest):
         self.assertEqual(message._sender, self.contact)
 
 
+    def test_text_must_be_str(self):
+        with self.assertRaises(TypeError):
+            message = Message(
+             100,
+             datetime(2011, 3, 1, 12, 34, 32),
+             self.contact
+            )
+
+
+    def test_timestamp_must_be_datetime(self):
+        with self.assertRaises(TypeError):
+            message = Message(
+             "100",
+             datetime(2011, 3, 1).date(),
+             self.contact
+            )
+
+
+    def test_sender_must_be_contact(self):
+        with self.assertRaises(TypeError):
+            message = Message(
+             "100",
+             datetime(2011, 3, 1, 12, 34, 32),
+             "person"
+            )
+
+
     def test_message_repr(self):
         message = Message(
          "memento mori",
