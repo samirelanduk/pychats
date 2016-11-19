@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest import TestCase
 from unittest.mock import Mock
 from pychats.chats import Conversation, Contact, Message
@@ -18,8 +19,10 @@ class ConversationCreationTests(TestCase):
 class ConversationMessagesTests(TestCase):
 
     def setUp(self):
-        self.senders = [Mock(Contact) for _ in range(3)]
-        self.messages = [Mock(Message) for _ in range(3)]
+        self.senders = [Mock(Contact) for _ in range(5)]
+        self.messages = [Mock(Message) for _ in range(5)]
+        for index, message in enumerate(self.messages):
+            message.timestamp.return_value = datetime(2009, 5, index + 1, 12)
         self.conversation = Conversation()
 
 
@@ -54,3 +57,16 @@ class ConversationMessagesTests(TestCase):
         self.assertEqual(self.conversation._messages, [self.messages[0]])
         self.conversation.messages().append(self.messages[1])
         self.assertEqual(self.conversation._messages, [self.messages[0]])
+
+
+    def test_adding_messages_will_order_them_by_date(self):
+        self.conversation.add_message(self.messages[2])
+        self.assertEqual(self.conversation._messages, [self.messages[2]])
+        self.conversation.add_message(self.messages[1])
+        self.assertEqual(self.conversation._messages, self.messages[1:3])
+        self.conversation.add_message(self.messages[0])
+        self.assertEqual(self.conversation._messages, self.messages[:3])
+        self.conversation.add_message(self.messages[4])
+        self.assertEqual(self.conversation._messages, self.messages[:3] + [self.messages[-1]])
+        self.conversation.add_message(self.messages[3])
+        self.assertEqual(self.conversation._messages, self.messages)
