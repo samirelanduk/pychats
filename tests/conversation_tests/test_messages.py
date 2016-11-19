@@ -1,7 +1,7 @@
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import Mock
-from pychats.conversations import Message, Contact
+from pychats.chats import Message, Contact
 
 class MessageTest(TestCase):
 
