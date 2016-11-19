@@ -47,3 +47,10 @@ class ConversationMessagesTests(TestCase):
          self.conversation.messages(),
          self.conversation._messages
         )
+
+
+    def test_message_access_is_read_only(self):
+        self.conversation.add_message(self.messages[0])
+        self.assertEqual(self.conversation._messages, [self.messages[0]])
+        self.conversation.messages().append(self.messages[1])
+        self.assertEqual(self.conversation._messages, [self.messages[0]])

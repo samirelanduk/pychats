@@ -11,7 +11,7 @@ class Conversation:
 
 
     def messages(self):
-        return self._messages
+        return list(self._messages)
 
 
     def add_message(self, message):
