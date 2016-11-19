@@ -10,6 +10,10 @@ class Conversation:
         return "<Conversation (%i messages)>" % len(self._messages)
 
 
+    def messages(self):
+        return self._messages
+
+
     def add_message(self, message):
         if not isinstance(message, Message):
             raise TypeError(

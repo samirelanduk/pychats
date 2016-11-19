@@ -39,3 +39,11 @@ class ConversationMessagesTests(TestCase):
         self.conversation.add_message(self.messages[0])
         with self.assertRaises(ValueError):
             self.conversation.add_message(self.messages[0])
+
+
+    def test_can_access_messages(self):
+        self.conversation.add_message(self.messages[0])
+        self.assertEqual(
+         self.conversation.messages(),
+         self.conversation._messages
+        )
