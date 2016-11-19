@@ -20,3 +20,15 @@ class Message:
          self._sender.name(),
          self._timestamp.strftime("%Y-%m-%d %H:%M")
         )
+
+
+    def text(self):
+        return self._text
+
+
+    def timestamp(self):
+        return self._timestamp
+
+
+    def sender(self):
+        return self._sender

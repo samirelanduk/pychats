@@ -60,3 +60,17 @@ class MessageCreationTests(MessageTest):
          str(message),
          "<Message from Lafayette at 2011-03-01 12:34>"
         )
+
+
+
+class MessagePropertyTests(MessageTest):
+
+    def test_can_access_message_properties(self):
+        message = Message(
+         "memento mori",
+         datetime(2011, 3, 1, 12, 34, 32),
+         self.contact
+        )
+        self.assertIs(message._text, message.text())
+        self.assertIs(message._timestamp, message.timestamp())
+        self.assertIs(message._sender, message.sender())
