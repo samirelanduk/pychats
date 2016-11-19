@@ -65,27 +65,43 @@ class MessageCreationTests(MessageTest):
 
 class MessagePropertyTests(MessageTest):
 
-    def test_can_access_message_properties(self):
-        message = Message(
+    def setUp(self):
+        MessageTest.setUp(self)
+        self.message = Message(
          "memento mori",
          datetime(2011, 3, 1, 12, 34, 32),
          self.contact
         )
-        self.assertIs(message._text, message.text())
-        self.assertIs(message._timestamp, message.timestamp())
-        self.assertIs(message._sender, message.sender())
+
+
+    def test_can_access_message_properties(self):
+        self.assertIs(self.message._text, self.message.text())
+        self.assertIs(self.message._timestamp, self.message.timestamp())
+        self.assertIs(self.message._sender, self.message.sender())
 
 
     def test_can_update_message_properties(self):
-        message = Message(
-         "memento mori",
-         datetime(2011, 3, 1, 12, 34, 32),
-         self.contact
-        )
-        message.text("Non semper erit aestas")
-        message.timestamp(datetime(2012, 1, 19, 9, 23, 56))
+        self.message.text("Non semper erit aestas")
+        self.message.timestamp(datetime(2012, 1, 19, 9, 23, 56))
         new_sender = Mock(Contact)
-        message.sender(new_sender)
-        self.assertEqual(message.text(), "Non semper erit aestas")
-        self.assertEqual(message.timestamp(), datetime(2012, 1, 19, 9, 23, 56))
-        self.assertIs(message.sender(), new_sender)
+        self.message.sender(new_sender)
+        self.assertEqual(self.message.text(), "Non semper erit aestas")
+        self.assertEqual(self.message.timestamp(), datetime(2012, 1, 19, 9, 23, 56))
+        self.assertIs(self.message.sender(), new_sender)
+
+
+    def test_new_text_must_be_str(self):
+        with self.assertRaises(TypeError):
+            self.message.text(1000)
+
+
+    def test_new_timestamp_must_be_datetime(self):
+        with self.assertRaises(TypeError):
+            self.message.timestamp(1000)
+        with self.assertRaises(TypeError):
+            self.message.timestamp(datetime(2012, 1, 19, 9, 23, 56).date())
+
+
+    def test_new_sender_must_be_contact(self):
+        with self.assertRaises(TypeError):
+            self.message.sender(1000)

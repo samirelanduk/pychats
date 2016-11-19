@@ -24,6 +24,8 @@ class Message:
 
     def text(self, text=None):
         if text:
+            if not isinstance(text, str):
+                raise TypeError("text must be str, not '%s'" % str(text))
             self._text = text
         else:
             return self._text
@@ -31,6 +33,10 @@ class Message:
 
     def timestamp(self, timestamp=None):
         if timestamp:
+            if not isinstance(timestamp, datetime):
+                raise TypeError(
+                 "timestamp must be datetime, not '%s'" % str(datetime)
+                )
             self._timestamp = timestamp
         else:
             return self._timestamp
@@ -38,6 +44,10 @@ class Message:
 
     def sender(self, sender=None):
         if sender:
+            if not isinstance(sender, Contact):
+                raise TypeError(
+                 "sender must be Contact, not '%s'" % str(sender)
+                )
             self._sender = sender
         else:
             return self._sender
