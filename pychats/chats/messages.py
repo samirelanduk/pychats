@@ -22,13 +22,22 @@ class Message:
         )
 
 
-    def text(self):
-        return self._text
+    def text(self, text=None):
+        if text:
+            self._text = text
+        else:
+            return self._text
 
 
-    def timestamp(self):
-        return self._timestamp
+    def timestamp(self, timestamp=None):
+        if timestamp:
+            self._timestamp = timestamp
+        else:
+            return self._timestamp
 
 
-    def sender(self):
-        return self._sender
+    def sender(self, sender=None):
+        if sender:
+            self._sender = sender
+        else:
+            return self._sender

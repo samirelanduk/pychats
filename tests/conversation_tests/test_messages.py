@@ -74,3 +74,18 @@ class MessagePropertyTests(MessageTest):
         self.assertIs(message._text, message.text())
         self.assertIs(message._timestamp, message.timestamp())
         self.assertIs(message._sender, message.sender())
+
+
+    def test_can_update_message_properties(self):
+        message = Message(
+         "memento mori",
+         datetime(2011, 3, 1, 12, 34, 32),
+         self.contact
+        )
+        message.text("Non semper erit aestas")
+        message.timestamp(datetime(2012, 1, 19, 9, 23, 56))
+        new_sender = Mock(Contact)
+        message.sender(new_sender)
+        self.assertEqual(message.text(), "Non semper erit aestas")
+        self.assertEqual(message.timestamp(), datetime(2012, 1, 19, 9, 23, 56))
+        self.assertIs(message.sender(), new_sender)
