@@ -18,3 +18,12 @@ class ChatlogCreationTests(TestCase):
     def test_chatlog_repr(self):
         chatlog = ChatLog("Facebook")
         self.assertEqual(str(chatlog), "<'Facebook' ChatLog (0 Conversations)>")
+
+
+
+class ChatLogPropertiesTests(TestCase):
+
+    def test_chatlog_properties(self):
+        chatlog = ChatLog("Facebook")
+        self.assertIs(chatlog._name, chatlog.name())
+        self.assertIs(chatlog._conversations, chatlog.conversations())

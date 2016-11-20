@@ -11,3 +11,11 @@ class ChatLog:
         return "<'%s' ChatLog (%i Conversations)>" % (
          self._name, len(self._conversations)
         )
+
+
+    def name(self):
+        return self._name
+
+
+    def conversations(self):
+        return self._conversations
