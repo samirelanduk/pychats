@@ -97,3 +97,10 @@ class ConversationMessagesTests(TestCase):
          self.conversation._messages,
          [self.messages[1], self.messages[3]]
         )
+
+
+    def test_removing_messages_resets_message_conversation_to_none(self):
+        self.conversation.add_message(self.messages[0])
+        self.assertIs(self.messages[0]._conversation, self.conversation)
+        self.conversation.remove_message(self.messages[0])
+        self.assertIs(self.messages[0]._conversation, None)
