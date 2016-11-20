@@ -1,8 +1,17 @@
 from unittest import TestCase
 from unittest.mock import Mock
-from pychats.chats import ChatLog
+from pychats.chats import ChatLog, Conversation
 
-class ChatlogCreationTests(TestCase):
+class ChatLogTest(TestCase):
+
+    def setUp(self):
+        self.conversation1 = Mock(Conversation)
+        self.conversation2 = Mock(Conversation)
+        self.conversation3 = Mock(Conversation)
+
+
+
+class ChatlogCreationTests(ChatLogTest):
 
     def test_can_create_chatlog(self):
         chatlog = ChatLog("Facebook")
@@ -21,12 +30,12 @@ class ChatlogCreationTests(TestCase):
 
 
 
-class ChatLogPropertiesTests(TestCase):
+class ChatLogPropertiesTests(ChatLogTest):
 
     def test_chatlog_properties(self):
         chatlog = ChatLog("Facebook")
-        self.assertIs(chatlog._name, chatlog.name())
-        self.assertIs(chatlog._conversations, chatlog.conversations())
+        self.assertEqual(chatlog._name, chatlog.name())
+        self.assertEqual(chatlog._conversations, chatlog.conversations())
 
 
     def test_can_update_chatlog_properties(self):
@@ -39,3 +48,11 @@ class ChatLogPropertiesTests(TestCase):
         chatlog = ChatLog("Facebook")
         with self.assertRaises(TypeError):
             chatlog.name(100)
+
+
+    def test_conversations_is_read_only(self):
+        chatlog = ChatLog("Facebook")
+        chatlog._conversations = set([self.conversation1, self.conversation2])
+        self.assertEqual(len(chatlog.conversations()), 2)
+        chatlog.conversations().add(self.conversation3)
+        self.assertEqual(len(chatlog.conversations()), 2)

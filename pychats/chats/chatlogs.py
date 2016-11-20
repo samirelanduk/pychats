@@ -23,4 +23,4 @@ class ChatLog:
 
 
     def conversations(self):
-        return self._conversations
+        return set(self._conversations)
