@@ -40,3 +40,7 @@ class ChatLog:
              )
             )
         self._conversations.add(conversation)
+
+
+    def remove_conversation(self, conversation):
+        self._conversations.remove(conversation)

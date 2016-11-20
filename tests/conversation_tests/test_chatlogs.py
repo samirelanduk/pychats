@@ -85,3 +85,15 @@ class ChatLogPropertiesTests(ChatLogTest):
         chatlog.add_conversation(self.conversation1)
         with self.assertRaises(ValueError):
             chatlog.add_conversation(self.conversation1)
+
+
+    def test_can_remove_conversations(self):
+        chatlog = ChatLog("Facebook")
+        chatlog.add_conversation(self.conversation1)
+        chatlog.add_conversation(self.conversation2)
+        self.assertEqual(
+         chatlog.conversations(),
+         set([self.conversation1, self.conversation2])
+        )
+        chatlog.remove_conversation(self.conversation1)
+        self.assertEqual(chatlog.conversations(), set([self.conversation2]))
