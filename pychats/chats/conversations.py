@@ -7,7 +7,9 @@ class Conversation:
 
 
     def __repr__(self):
-        return "<Conversation (%i messages)>" % len(self._messages)
+        return "<Conversation (%i message%s)>" % (
+         len(self._messages), "" if len(self._messages) == 1 else "s"
+        )
 
 
     def messages(self):

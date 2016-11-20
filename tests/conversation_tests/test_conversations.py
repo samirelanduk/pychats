@@ -13,6 +13,12 @@ class ConversationCreationTests(TestCase):
     def test_conversation_repr(self):
         conversation = Conversation()
         self.assertEqual(str(conversation), "<Conversation (0 messages)>")
+        conversation._messages.append(Mock(Message))
+        self.assertEqual(str(conversation), "<Conversation (1 message)>")
+        conversation._messages.append(Mock(Message))
+        self.assertEqual(str(conversation), "<Conversation (2 messages)>")
+        conversation._messages.append(Mock(Message))
+        self.assertEqual(str(conversation), "<Conversation (3 messages)>")
 
 
 
