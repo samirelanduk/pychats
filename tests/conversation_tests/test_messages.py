@@ -7,6 +7,8 @@ class MessageTest(TestCase):
 
     def setUp(self):
         self.contact = Mock(Contact)
+        self.contact2 = Mock(Contact)
+        self.contact3 = Mock(Contact)
         self.contact.name.return_value = "Lafayette"
 
 
@@ -143,3 +145,19 @@ class MessagePropertyTests(MessageTest):
     def test_new_sender_must_be_contact(self):
         with self.assertRaises(TypeError):
             self.message.sender(1000)
+
+
+    def test_message_recipients_is_empty_when_no_conversation(self):
+        self.assertEqual(self.message.recipients(), set())
+
+
+    def test_can_get_message_recipients_from_conversation(self):
+        conversation = Mock(Conversation)
+        conversation.participants.return_value = set(
+         [self.contact, self.contact2, self.contact3]
+        )
+        self.message._conversation = conversation
+        self.assertEqual(
+         self.message.recipients(),
+         set([self.contact2, self.contact3])
+        )

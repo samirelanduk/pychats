@@ -60,3 +60,12 @@ class Message:
 
     def conversation(self):
         return self._conversation
+
+
+    def recipients(self):
+        if self.conversation():
+            people = set(self.conversation().participants())
+            people.remove(self.sender())
+            return people
+        else:
+            return set()
