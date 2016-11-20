@@ -70,3 +70,17 @@ class ConversationMessagesTests(TestCase):
         self.assertEqual(self.conversation._messages, self.messages[:3] + [self.messages[-1]])
         self.conversation.add_message(self.messages[3])
         self.assertEqual(self.conversation._messages, self.messages)
+
+
+    def test_can_remove_messages(self):
+        for message in self.messages:
+            self.conversation.add_message(message)
+        self.conversation.remove_message(self.messages[-1])
+        self.assertEqual(self.conversation._messages, self.messages[:-1])
+        self.conversation.remove_message(self.messages[0])
+        self.assertEqual(self.conversation._messages, self.messages[1:-1])
+        self.conversation.remove_message(self.messages[2])
+        self.assertEqual(
+         self.conversation._messages,
+         [self.messages[1], self.messages[3]]
+        )
