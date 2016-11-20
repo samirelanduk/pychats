@@ -21,6 +21,7 @@ class ConversationCreationTests(ConversationTest):
     def test_can_create_conversation(self):
         conversation = Conversation()
         self.assertEqual(conversation._messages, [])
+        self.assertEqual(conversation._chatlog, None)
 
 
     def test_conversation_repr(self):
@@ -108,6 +109,14 @@ class ConversationMessagesTests(ConversationTest):
         self.assertIs(self.messages[0]._conversation, self.conversation)
         self.conversation.remove_message(self.messages[0])
         self.assertIs(self.messages[0]._conversation, None)
+
+
+
+class ConversationChatlogTests(ConversationTest):
+
+    def test_can_access_chatlog(self):
+        self.conversation._chatlog = "..."
+        self.assertEqual(self.conversation.chatlog(), "...")
 
 
 

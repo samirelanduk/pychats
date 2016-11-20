@@ -4,6 +4,7 @@ class Conversation:
 
     def __init__(self):
         self._messages = []
+        self._chatlog = None
 
 
     def __repr__(self):
@@ -44,6 +45,10 @@ class Conversation:
     def remove_message(self, message):
         self._messages.remove(message)
         message._conversation = None
+
+
+    def chatlog(self):
+        return self._chatlog
 
 
     def participants(self):
