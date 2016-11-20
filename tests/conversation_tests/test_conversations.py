@@ -3,7 +3,20 @@ from unittest import TestCase
 from unittest.mock import Mock
 from pychats.chats import Conversation, Contact, Message
 
-class ConversationCreationTests(TestCase):
+class ConversationTest(TestCase):
+
+    def setUp(self):
+        self.senders = [Mock(Contact) for _ in range(5)]
+        self.messages = [Mock(Message) for _ in range(5)]
+        for index, message in enumerate(self.messages):
+            message.timestamp.return_value = datetime(2009, 5, index + 1, 12)
+            message.sender.return_value = self.senders[index % 3]
+            message._conversation = None
+        self.conversation = Conversation()
+
+
+
+class ConversationCreationTests(ConversationTest):
 
     def test_can_create_conversation(self):
         conversation = Conversation()
@@ -22,16 +35,7 @@ class ConversationCreationTests(TestCase):
 
 
 
-class ConversationMessagesTests(TestCase):
-
-    def setUp(self):
-        self.senders = [Mock(Contact) for _ in range(5)]
-        self.messages = [Mock(Message) for _ in range(5)]
-        for index, message in enumerate(self.messages):
-            message.timestamp.return_value = datetime(2009, 5, index + 1, 12)
-            message._conversation = None
-        self.conversation = Conversation()
-
+class ConversationMessagesTests(ConversationTest):
 
     def test_can_add_messages_to_conversation(self):
         self.conversation.add_message(self.messages[0])
@@ -104,3 +108,35 @@ class ConversationMessagesTests(TestCase):
         self.assertIs(self.messages[0]._conversation, self.conversation)
         self.conversation.remove_message(self.messages[0])
         self.assertIs(self.messages[0]._conversation, None)
+
+
+
+class ConversationParticipantTests(ConversationTest):
+
+    def test_can_get_conversation_participants(self):
+        self.assertEqual(self.conversation.participants(), set())
+        self.conversation.add_message(self.messages[0])
+        self.assertEqual(
+         self.conversation.participants(),
+         set([self.senders[0]])
+        )
+        self.conversation.add_message(self.messages[1])
+        self.assertEqual(
+         self.conversation.participants(),
+         set(self.senders[0:2])
+        )
+        self.conversation.add_message(self.messages[2])
+        self.assertEqual(
+         self.conversation.participants(),
+         set(self.senders[0:3])
+        )
+        self.conversation.add_message(self.messages[3])
+        self.assertEqual(
+         self.conversation.participants(),
+         set(self.senders[0:3])
+        )
+        self.conversation.add_message(self.messages[4])
+        self.assertEqual(
+         self.conversation.participants(),
+         set(self.senders[0:3])
+        )

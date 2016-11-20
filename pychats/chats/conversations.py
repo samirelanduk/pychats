@@ -44,3 +44,10 @@ class Conversation:
     def remove_message(self, message):
         self._messages.remove(message)
         message._conversation = None
+
+
+    def participants(self):
+        participants = set()
+        for message in self.messages():
+            participants.add(message.sender())
+        return participants
