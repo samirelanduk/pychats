@@ -27,3 +27,15 @@ class ChatLogPropertiesTests(TestCase):
         chatlog = ChatLog("Facebook")
         self.assertIs(chatlog._name, chatlog.name())
         self.assertIs(chatlog._conversations, chatlog.conversations())
+
+
+    def test_can_update_chatlog_properties(self):
+        chatlog = ChatLog("Facebook")
+        chatlog.name("WhatsApp")
+        self.assertEqual(chatlog.name(), "WhatsApp")
+
+
+    def test_chatlog_name_must_be_set_to_str(self):
+        chatlog = ChatLog("Facebook")
+        with self.assertRaises(TypeError):
+            chatlog.name(100)

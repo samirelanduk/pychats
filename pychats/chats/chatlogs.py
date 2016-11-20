@@ -13,8 +13,13 @@ class ChatLog:
         )
 
 
-    def name(self):
-        return self._name
+    def name(self, name=None):
+        if name:
+            if not isinstance(name, str):
+                raise TypeError("name must be str, not '%s'" % name)
+            self._name = name
+        else:
+            return self._name
 
 
     def conversations(self):
