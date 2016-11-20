@@ -36,6 +36,7 @@ class Conversation:
                 if bigger_than_current and smaller_than_next:
                     self._messages.insert(index + 1, message)
                     break
+        message._conversation = self
 
 
     def remove_message(self, message):

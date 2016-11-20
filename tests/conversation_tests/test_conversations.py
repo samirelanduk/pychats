@@ -23,6 +23,7 @@ class ConversationMessagesTests(TestCase):
         self.messages = [Mock(Message) for _ in range(5)]
         for index, message in enumerate(self.messages):
             message.timestamp.return_value = datetime(2009, 5, index + 1, 12)
+            message._conversation = None
         self.conversation = Conversation()
 
 
@@ -42,6 +43,12 @@ class ConversationMessagesTests(TestCase):
         self.conversation.add_message(self.messages[0])
         with self.assertRaises(ValueError):
             self.conversation.add_message(self.messages[0])
+
+
+    def test_adding_messages_updates_conversation_of_messages(self):
+        self.assertIs(self.messages[0]._conversation, None)
+        self.conversation.add_message(self.messages[0])
+        self.assertIs(self.messages[0]._conversation, self.conversation)
 
 
     def test_can_access_messages(self):
