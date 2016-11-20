@@ -39,6 +39,10 @@ class Message:
                  "timestamp must be datetime, not '%s'" % str(datetime)
                 )
             self._timestamp = timestamp
+            if self.conversation():
+                conversation = self.conversation()
+                conversation.remove_message(self)
+                conversation.add_message(self)
         else:
             return self._timestamp
 

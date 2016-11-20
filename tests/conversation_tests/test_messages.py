@@ -1,7 +1,7 @@
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import Mock
-from pychats.chats import Message, Contact
+from pychats.chats import Message, Contact, Conversation
 
 class MessageTest(TestCase):
 
@@ -102,6 +102,42 @@ class MessagePropertyTests(MessageTest):
             self.message.timestamp(1000)
         with self.assertRaises(TypeError):
             self.message.timestamp(datetime(2012, 1, 19, 9, 23, 56).date())
+
+
+    def test_updating_timestamp_will_make_message_rearrange_in_conversation(self):
+        conversation = Conversation()
+        message1 = Message(
+         "memento mori",
+         datetime(2011, 3, 1, 10, 34, 32),
+         self.contact
+        )
+        message2 = Message(
+         "memento mori",
+         datetime(2011, 3, 1, 11, 34, 32),
+         self.contact
+        )
+        conversation.add_message(message1)
+        conversation.add_message(message2)
+        conversation.add_message(self.message)
+        self.assertEqual(
+         conversation.messages(),
+         [message1, message2, self.message]
+        )
+        self.message.timestamp(datetime(2011, 3, 1, 12, 0, 0))
+        self.assertEqual(
+         conversation.messages(),
+         [message1, message2, self.message]
+        )
+        self.message.timestamp(datetime(2011, 3, 1, 11, 0, 0))
+        self.assertEqual(
+         conversation.messages(),
+         [message1, self.message, message2]
+        )
+        self.message.timestamp(datetime(2011, 3, 1, 10, 0, 0))
+        self.assertEqual(
+         conversation.messages(),
+         [self.message, message1, message2]
+        )
 
 
     def test_new_sender_must_be_contact(self):
