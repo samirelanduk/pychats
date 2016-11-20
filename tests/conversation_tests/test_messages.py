@@ -21,6 +21,7 @@ class MessageCreationTests(MessageTest):
         self.assertEqual(message._text, "memento mori")
         self.assertEqual(message._timestamp, datetime(2011, 3, 1, 12, 34, 32))
         self.assertEqual(message._sender, self.contact)
+        self.assertEqual(message._conversation, None)
 
 
     def test_text_must_be_str(self):
@@ -78,6 +79,7 @@ class MessagePropertyTests(MessageTest):
         self.assertIs(self.message._text, self.message.text())
         self.assertIs(self.message._timestamp, self.message.timestamp())
         self.assertIs(self.message._sender, self.message.sender())
+        self.assertIs(self.message._conversation, self.message.conversation())
 
 
     def test_can_update_message_properties(self):

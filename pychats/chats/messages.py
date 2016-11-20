@@ -13,6 +13,7 @@ class Message:
         self._text = text
         self._timestamp = timestamp
         self._sender = sender
+        self._conversation = None
 
 
     def __repr__(self):
@@ -51,3 +52,7 @@ class Message:
             self._sender = sender
         else:
             return self._sender
+
+
+    def conversation(self):
+        return self._conversation
