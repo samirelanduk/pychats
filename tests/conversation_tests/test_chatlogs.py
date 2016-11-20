@@ -56,3 +56,32 @@ class ChatLogPropertiesTests(ChatLogTest):
         self.assertEqual(len(chatlog.conversations()), 2)
         chatlog.conversations().add(self.conversation3)
         self.assertEqual(len(chatlog.conversations()), 2)
+
+
+    def test_can_add_conversation(self):
+        chatlog = ChatLog("Facebook")
+        chatlog.add_conversation(self.conversation1)
+        self.assertEqual(chatlog.conversations(), set([self.conversation1]))
+        chatlog.add_conversation(self.conversation2)
+        self.assertEqual(
+         chatlog.conversations(),
+         set([self.conversation1, self.conversation2])
+        )
+        chatlog.add_conversation(self.conversation3)
+        self.assertEqual(
+         chatlog.conversations(),
+         set([self.conversation1, self.conversation2, self.conversation3])
+        )
+
+
+    def test_can_only_add_conversation(self):
+        chatlog = ChatLog("Facebook")
+        with self.assertRaises(TypeError):
+            chatlog.add_conversation("Conv")
+
+
+    def test_cannot_add_existing_conversation(self):
+        chatlog = ChatLog("Facebook")
+        chatlog.add_conversation(self.conversation1)
+        with self.assertRaises(ValueError):
+            chatlog.add_conversation(self.conversation1)
