@@ -8,3 +8,8 @@ class ChatlogCreationTests(TestCase):
         chatlog = ChatLog("Facebook")
         self.assertEqual(chatlog._name, "Facebook")
         self.assertEqual(chatlog._conversations, set())
+
+
+    def test_chatlog_name_must_be_str(self):
+        with self.assertRaises(TypeError):
+            ChatLog(1000)
