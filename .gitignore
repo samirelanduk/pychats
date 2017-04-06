@@ -6,3 +6,4 @@ _static
 _templates
 dist
 *.egg-info
+*env
