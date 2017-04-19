@@ -1,6 +1,10 @@
+"""This module contains the Conversation class."""
+
 from .messages import Message
 
 class Conversation:
+    """Represents a conversation between two or more people. Ultimately it is a
+    collection of messages, each of which has a sender."""
 
     def __init__(self):
         self._messages = []
@@ -14,44 +18,62 @@ class Conversation:
 
 
     def messages(self):
+        """Returns the :py:class:`.Message`s in the conversation.
+
+        :rtype: ``Message``"""
+
         return list(self._messages)
 
 
     def add_message(self, message):
+        """Adds a :py:class:`.Message` to the conversation.
+
+        You cannot add a message if it is already in the conversation, and
+        regardless of the order in which you add messages, they will be stored
+        in order of the messages' timestamps.
+
+        :param Message message: the ``Message`` to remove.
+        :raises ValueError: if a message is given that is already there."""
+
         if not isinstance(message, Message):
-            raise TypeError(
-             "Can only add Message objects with, not '%s'" % str(message)
-            )
+            raise TypeError("'%s' is not a Message object" % str(message))
         if message in self._messages:
             raise ValueError(
-             "Cannot add %s ('%s') to %s as it is already present" % (
-              str(message), message.text(), self
-             )
+             "'%s' is already in '%s'" % (str(message), str(self))
             )
-        if not self._messages or message.timestamp() > self._messages[-1].timestamp():
-            self._messages.append(message)
-        elif message.timestamp() < self._messages[0].timestamp():
+        if self._messages and message.timestamp() < self._messages[0].timestamp():
             self._messages.insert(0, message)
         else:
-            for index, current_message in enumerate(self._messages[:-1]):
-                bigger_than_current = message.timestamp() > current_message.timestamp()
-                smaller_than_next = message.timestamp() <= self._messages[index + 1].timestamp()
-                if bigger_than_current and smaller_than_next:
-                    self._messages.insert(index + 1, message)
-                    break
+            self._messages.append(message)
+            if len(self._messages) > 1\
+             and message.timestamp() < self._messages[-2].timestamp():
+                self._messages = sorted(self._messages, key=lambda k: k.timestamp())
         message._conversation = self
 
 
     def remove_message(self, message):
+        """Removes a :py:class:`.Message` from the conversation.
+
+        :param Message message: the ``Message`` to remove."""
+
         self._messages.remove(message)
         message._conversation = None
 
 
     def chatlog(self):
+        """Returns the :py:class:`.Chatlog` the conversation is a part of.You
+        cannot set this directly, but it will be updated whenever a conversation
+        is added to a chatlog.
+
+        :rtype: ``Chatlog``"""
+
         return self._chatlog
 
 
     def participants(self):
+        """Returns all the :py:class:`.Contact`s who have sent messages in this
+        conversation."""
+        
         participants = set()
         for message in self.messages():
             participants.add(message.sender())
