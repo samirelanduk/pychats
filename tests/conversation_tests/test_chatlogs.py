@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 from pychats.chats import ChatLog, Conversation
 
-class ChatLogTest(TestCase):
+class ChatlogTest(TestCase):
 
     def setUp(self):
         self.conversation1 = Mock(Conversation)
@@ -11,7 +11,7 @@ class ChatLogTest(TestCase):
 
 
 
-class ChatlogCreationTests(ChatLogTest):
+class ChatlogCreationTests(ChatlogTest):
 
     def test_can_create_chatlog(self):
         chatlog = ChatLog("Facebook")
@@ -24,24 +24,41 @@ class ChatlogCreationTests(ChatLogTest):
             ChatLog(1000)
 
 
-    def test_chatlog_repr(self):
+
+class ChatlogReprTests(ChatlogTest):
+
+    def test_chatlog_repr_no_conversations(self):
         chatlog = ChatLog("Facebook")
         self.assertEqual(str(chatlog), "<'Facebook' ChatLog (0 Conversations)>")
 
 
-
-class ChatLogPropertiesTests(ChatLogTest):
-
-    def test_chatlog_properties(self):
+    def test_chatlog_repr_one_conversation(self):
         chatlog = ChatLog("Facebook")
-        self.assertEqual(chatlog._name, chatlog.name())
-        self.assertEqual(chatlog._conversations, chatlog.conversations())
+        chatlog._conversations.add(Mock(Conversation))
+        self.assertEqual(str(chatlog), "<'Facebook' ChatLog (1 Conversation)>")
 
 
-    def test_can_update_chatlog_properties(self):
+    def test_chatlog_repr_multiple_conversation(self):
+        chatlog = ChatLog("Facebook")
+        chatlog._conversations.add(Mock(Conversation))
+        chatlog._conversations.add(Mock(Conversation))
+        self.assertEqual(str(chatlog), "<'Facebook' ChatLog (2 Conversations)>")
+        chatlog._conversations.add(Mock(Conversation))
+        self.assertEqual(str(chatlog), "<'Facebook' ChatLog (3 Conversations)>")
+
+
+
+class ChatlogNameTests(ChatlogTest):
+
+    def test_chatlog_name(self):
+        chatlog = ChatLog("Facebook")
+        self.assertIs(chatlog._name, chatlog.name())
+
+
+    def test_can_update_chatlog_name(self):
         chatlog = ChatLog("Facebook")
         chatlog.name("WhatsApp")
-        self.assertEqual(chatlog.name(), "WhatsApp")
+        self.assertEqual(chatlog._name, "WhatsApp")
 
 
     def test_chatlog_name_must_be_set_to_str(self):
@@ -50,26 +67,30 @@ class ChatLogPropertiesTests(ChatLogTest):
             chatlog.name(100)
 
 
-    def test_conversations_is_read_only(self):
-        chatlog = ChatLog("Facebook")
-        chatlog._conversations = set([self.conversation1, self.conversation2])
-        self.assertEqual(len(chatlog.conversations()), 2)
-        chatlog.conversations().add(self.conversation3)
-        self.assertEqual(len(chatlog.conversations()), 2)
 
+class ChatLogConversationsTests(ChatlogTest):
+
+    def test_chatlog_conversations(self):
+        chatlog = ChatLog("Facebook")
+        self.assertEqual(chatlog._conversations, chatlog.conversations())
+        self.assertIsNot(chatlog._conversations, chatlog.conversations())
+
+
+
+class ChatlogConversationAdditionTests(ChatlogTest):
 
     def test_can_add_conversation(self):
         chatlog = ChatLog("Facebook")
         chatlog.add_conversation(self.conversation1)
-        self.assertEqual(chatlog.conversations(), set([self.conversation1]))
+        self.assertEqual(chatlog._conversations, set([self.conversation1]))
         chatlog.add_conversation(self.conversation2)
         self.assertEqual(
-         chatlog.conversations(),
+         chatlog._conversations,
          set([self.conversation1, self.conversation2])
         )
         chatlog.add_conversation(self.conversation3)
         self.assertEqual(
-         chatlog.conversations(),
+         chatlog._conversations,
          set([self.conversation1, self.conversation2, self.conversation3])
         )
 
@@ -87,13 +108,16 @@ class ChatLogPropertiesTests(ChatLogTest):
             chatlog.add_conversation(self.conversation1)
 
 
+
+class ChatlogConversationRemovalTests(ChatlogTest):
+
     def test_can_remove_conversations(self):
         chatlog = ChatLog("Facebook")
         chatlog.add_conversation(self.conversation1)
         chatlog.add_conversation(self.conversation2)
         self.assertEqual(
-         chatlog.conversations(),
+         chatlog._conversations,
          set([self.conversation1, self.conversation2])
         )
         chatlog.remove_conversation(self.conversation1)
-        self.assertEqual(chatlog.conversations(), set([self.conversation2]))
+        self.assertEqual(chatlog._conversations, set([self.conversation2]))

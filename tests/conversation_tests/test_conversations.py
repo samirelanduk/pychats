@@ -35,7 +35,6 @@ class ConversationReprTests(ConversationTest):
         conversation = Conversation()
         conversation._messages.append(Mock(Message))
         self.assertEqual(str(conversation), "<Conversation (1 message)>")
-        conversation._messages.append(Mock(Message))
 
 
     def test_conversation_repr_multiple_message(self):
