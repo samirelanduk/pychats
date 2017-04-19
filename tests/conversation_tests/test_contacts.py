@@ -1,5 +1,5 @@
 from unittest import TestCase
-from pychats.chats import Contact
+from pychats.chats.people import Contact
 
 class ContactCreationTests(TestCase):
 

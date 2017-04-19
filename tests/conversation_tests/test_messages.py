@@ -1,7 +1,9 @@
 from datetime import datetime
 from unittest import TestCase
-from unittest.mock import Mock
-from pychats.chats import Message, Contact, Conversation
+from unittest.mock import Mock, patch
+from pychats.chats.people import Contact
+from pychats.chats.messages import Message
+from pychats.chats.conversations import Conversation
 
 class MessageTest(TestCase):
 
@@ -10,6 +12,7 @@ class MessageTest(TestCase):
         self.contact2 = Mock(Contact)
         self.contact3 = Mock(Contact)
         self.contact1.name.return_value = "Lafayette"
+        self.conversation = Mock(Conversation)
 
 
 class MessageCreationTests(MessageTest):
@@ -112,6 +115,18 @@ class MessageTimestampTests(MessageTest):
             message.timestamp(datetime(2012, 1, 19, 9, 23, 56).date())
 
 
+    @patch("pychats.chats.conversations._sort_messages")
+    def test_updating_timestamp_will_make_message_rearrange_in_conversation(self, mock_sort):
+        message = Message(
+         "memento mori", datetime(2011, 3, 1, 12, 34, 32), self.contact1
+        )
+        message._conversation = Mock(Conversation)
+        message._conversation._messages = [message]
+        message.timestamp(datetime(2012, 1, 19, 9, 23, 56))
+        mock_sort.assert_called_with([message])
+
+
+
 
 class MessageSenderTests(MessageTest):
 
@@ -146,7 +161,33 @@ class MessageConversationTests(MessageTest):
          "memento mori", datetime(2011, 3, 1, 12, 34, 32), self.contact1
         )
         message._conversation = "A conversation"
-        self.assertEqual(message._conversation, message.conversation())
+        self.assertIs(message._conversation, message.conversation())
+
+
+
+class MessageRecipientTests(MessageTest):
+
+    def test_message_recipients_is_empty_when_no_conversation(self):
+        message = Message(
+         "memento mori", datetime(2011, 3, 1, 12, 34, 32), self.contact1
+        )
+        self.assertEqual(message.recipients(), set())
+
+
+    def test_message_recipients_is_conversation_participants_without_sender(self):
+        message = Message(
+         "memento mori", datetime(2011, 3, 1, 12, 34, 32), self.contact1
+        )
+        conversation = Mock(Conversation)
+        conversation.participants.return_value = set(
+         [self.contact1, self.contact2, self.contact3]
+        )
+        message._conversation = conversation
+        self.assertEqual(
+         message.recipients(),
+         set([self.contact2, self.contact3])
+        )
+
 
 
 '''

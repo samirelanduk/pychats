@@ -56,6 +56,8 @@ class Message:
                 raise TypeError(
                  "timestamp must be datetime, not '%s'" % str(datetime)
                 )
+            from .conversations import _sort_messages
+            if self._conversation: _sort_messages(self._conversation._messages)
             self._timestamp = timestamp
         else:
             return self._timestamp
@@ -93,7 +95,7 @@ class Message:
         :py:class:`.Conversation`.
 
         :returns: ``set`` of ``Contact``"""
-        
+
         if self.conversation():
             people = set(self.conversation().participants())
             people.remove(self.sender())

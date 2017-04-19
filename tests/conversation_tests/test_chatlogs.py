@@ -1,6 +1,7 @@
 from unittest import TestCase
 from unittest.mock import Mock
-from pychats.chats import ChatLog, Conversation
+from pychats.chats.conversations import Conversation
+from pychats.chats.chatlogs import ChatLog
 
 class ChatlogTest(TestCase):
 

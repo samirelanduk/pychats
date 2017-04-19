@@ -73,8 +73,13 @@ class Conversation:
     def participants(self):
         """Returns all the :py:class:`.Contact`s who have sent messages in this
         conversation."""
-        
+
         participants = set()
         for message in self.messages():
             participants.add(message.sender())
         return participants
+
+
+
+def _sort_messages(messages):
+    return sorted(messages, key=lambda k: k.timestamp())

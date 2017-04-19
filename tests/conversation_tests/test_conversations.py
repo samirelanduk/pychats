@@ -1,7 +1,9 @@
 from datetime import datetime
 from unittest import TestCase
 from unittest.mock import Mock
-from pychats.chats import Conversation, Contact, Message
+from pychats.chats.conversations import Conversation, _sort_messages
+from pychats.chats.people import Contact
+from pychats.chats.messages import Message
 
 class ConversationTest(TestCase):
 
@@ -169,3 +171,11 @@ class ConversationParticipantTests(ConversationTest):
          conversation.participants(),
          set(self.senders[0:3])
         )
+
+
+
+class SortMessagesTests(ConversationTest):
+
+    def test_can_sort_messages(self):
+        messages = self.messages[2:5][::-1] + self.messages[:2]
+        self.assertEqual(_sort_messages(messages), self.messages)
