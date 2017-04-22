@@ -57,8 +57,11 @@ class Message:
                  "timestamp must be datetime, not '%s'" % str(datetime)
                 )
             from .conversations import _sort_messages
-            if self._conversation: _sort_messages(self._conversation._messages)
             self._timestamp = timestamp
+            if self._conversation:
+                self._conversation._messages = _sort_messages(
+                 self._conversation._messages
+                )
         else:
             return self._timestamp
 

@@ -63,6 +63,7 @@ class ChatLog:
              )
             )
         self._conversations.add(conversation)
+        conversation._chatlog = self
 
 
     def remove_conversation(self, conversation):

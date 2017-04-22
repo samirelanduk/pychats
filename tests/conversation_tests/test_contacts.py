@@ -29,7 +29,7 @@ class ContactNameTests(TestCase):
         self.assertIs(contact._name, contact.name())
 
 
-    def test_can_modify_contact_properties(self):
+    def test_can_modify_contact_name(self):
         contact = Contact("Marvin Goodwright")
         contact.name("Albus Dumbledore")
         self.assertEqual(contact._name, "Albus Dumbledore")

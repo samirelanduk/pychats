@@ -109,6 +109,12 @@ class ChatlogConversationAdditionTests(ChatlogTest):
             chatlog.add_conversation(self.conversation1)
 
 
+    def test_adding_conversation_updates_its_chatlog(self):
+        chatlog = ChatLog("Facebook")
+        chatlog.add_conversation(self.conversation1)
+        self.assertEqual(self.conversation1._chatlog, chatlog)
+
+
 
 class ChatlogConversationRemovalTests(ChatlogTest):
 
