@@ -18,7 +18,7 @@ class Conversation:
 
 
     def messages(self):
-        """Returns the :py:class:`.Message`s in the conversation.
+        """Returns the :py:class:`.Message` objects in the conversation.
 
         :rtype: ``Message``"""
 
@@ -61,7 +61,7 @@ class Conversation:
 
 
     def chatlog(self):
-        """Returns the :py:class:`.Chatlog` the conversation is a part of.You
+        """Returns the :py:class:`.ChatLog` the conversation is a part of.You
         cannot set this directly, but it will be updated whenever a conversation
         is added to a chatlog.
 
@@ -71,8 +71,8 @@ class Conversation:
 
 
     def participants(self):
-        """Returns all the :py:class:`.Contact`s who have sent messages in this
-        conversation."""
+        """Returns all the :py:class:`.Contact` objects who have sent messages
+        in this conversation."""
 
         participants = set()
         for message in self.messages():

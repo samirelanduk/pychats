@@ -3,7 +3,7 @@
 from .conversations import Conversation
 
 class ChatLog:
-    """A collection of :py:class:`Conversation`s from a single source.
+    """A collection of :py:class:`.Conversation` objects from a single source.
 
     :param str name: The name of the chatlog."""
 
@@ -37,7 +37,7 @@ class ChatLog:
 
 
     def conversations(self):
-        """Returns all the :py:class:`.Conversation`s in this chatlog.
+        """Returns all the :py:class:`.Conversation` objects in this chatlog.
 
         :returns: ``set`` of ``Conversation``"""
 

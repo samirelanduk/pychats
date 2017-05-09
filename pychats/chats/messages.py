@@ -93,8 +93,8 @@ class Message:
 
 
     def recipients(self):
-        """Returns the :py:class:`.Contact`s that recieved the message. This is
-        determined by the other people in the message's
+        """Returns the :py:class:`.Contact` objects that recieved the message.
+        This is determined by the other people in the message's
         :py:class:`.Conversation`.
 
         :returns: ``set`` of ``Contact``"""
