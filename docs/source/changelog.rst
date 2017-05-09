@@ -1,7 +1,7 @@
 Changelog
 ---------
 
-Release 0.1.0
+Release 2.0.0
 ~~~~~~~~~~~~~
 
 `9 May 2017`
