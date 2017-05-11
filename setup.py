@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name="pychats",
-      version="2.0.0",
+      version="2.1.0",
       description="Conversation analytics",
       long_description="Tools for accessing conversation backups from various sources, and analysing said conversations.",
       url="pychats.samireland.com",
@@ -19,5 +19,5 @@ setup(name="pychats",
                    "Programming Language :: Python :: 3.4",
                    "Programming Language :: Python :: 3.5",
                    "Programming Language :: Python :: 3.6"],
-      packages=["pychats", "pychats.chats"],
+      packages=["pychats", "pychats.chats", "pychats.json"],
       install_requires=[])
