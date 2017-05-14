@@ -6,6 +6,7 @@ class ContactCreationTests(TestCase):
     def test_can_create_contact(self):
         contact = Contact("Marvin Goodwright")
         self.assertEqual(contact._name, "Marvin Goodwright")
+        self.assertEqual(contact._tags, set())
 
 
     def test_contact_name_must_be_str(self):
@@ -39,3 +40,13 @@ class ContactNameTests(TestCase):
         contact = Contact("Marvin Goodwright")
         with self.assertRaises(TypeError):
             contact.name(123)
+
+
+
+class ContactTagsTests(TestCase):
+
+    def test_can_get_tags(self):
+        contact = Contact("Marvin Goodwright")
+        contact._tags = set(["aaa", "bbb"])
+        self.assertEqual(contact._tags, contact.tags())
+        self.assertIsNot(contact._tags, contact.tags())
