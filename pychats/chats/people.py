@@ -35,5 +35,16 @@ class Contact:
         categorise different contacts, such as by gender or group of friends.
 
         :rtype: ``set``"""
-        
+
         return set(self._tags)
+
+
+    def add_tag(self, tag):
+        """Adds a tag to the Contact.
+
+        :param str tag: The tag to add.
+        :raises TypeError: if the tag given is not a string."""
+        
+        if not isinstance(tag, str):
+            raise TypeError("tag must be str, not '%s'" % tag)
+        self._tags.add(tag)
