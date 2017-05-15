@@ -8,8 +8,29 @@ class ContactToJsonTests(TestCase):
     def test_can_make_json_from_contact(self):
         contact = Mock(Contact)
         contact.name.return_value = "Lord Asriel"
+        contact.tags.return_value = set()
         json = contact_to_json(contact)
-        self.assertEqual(json, {"name": "Lord Asriel"})
+        self.assertEqual(json, {"name": "Lord Asriel", "tags": []})
+
+
+    def test_can_make_tags_json_from_contact(self):
+        contact = Mock(Contact)
+        contact.name.return_value = "Lord Asriel"
+        contact.tags.return_value = set(["aaa"])
+        json = contact_to_json(contact)
+        self.assertEqual(json, {
+         "name": "Lord Asriel", "tags": ["aaa"]
+        })
+
+
+    def test_tags_json_is_ordered(self):
+        contact = Mock(Contact)
+        contact.name.return_value = "Lord Asriel"
+        contact.tags.return_value = set(["ddd", "zzz", "aaa"])
+        json = contact_to_json(contact)
+        self.assertEqual(json, {
+         "name": "Lord Asriel", "tags": ["aaa", "ddd", "zzz"]
+        })
 
 
     def test_contact_to_json_requires_contact(self):

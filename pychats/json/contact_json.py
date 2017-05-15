@@ -10,7 +10,10 @@ def contact_to_json(contact):
 
     if not isinstance(contact, Contact):
         raise TypeError("'%s' is not a Contact object" % str(contact))
-    return {"name": contact.name()}
+    return {
+     "name": contact.name(),
+     "tags": sorted(list(contact.tags()))
+    }
 
 
 def json_to_contact(json):
@@ -18,7 +21,7 @@ def json_to_contact(json):
 
     :param dict json: The ``dict`` to convert.
     :rtype: ``Contact``"""
-    
+
     if not isinstance(json, dict):
         raise TypeError("'%s' is not a dict" % str(json))
     if "name" not in json:
