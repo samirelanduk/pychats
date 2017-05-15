@@ -44,7 +44,15 @@ class Contact:
 
         :param str tag: The tag to add.
         :raises TypeError: if the tag given is not a string."""
-        
+
         if not isinstance(tag, str):
             raise TypeError("tag must be str, not '%s'" % tag)
         self._tags.add(tag)
+
+
+    def remove_tag(self, tag):
+        """Removes a tag from the Contact.
+
+        :param str tag: The tag to remove."""
+
+        self._tags.remove(tag)

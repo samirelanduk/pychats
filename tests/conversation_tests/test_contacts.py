@@ -60,10 +60,20 @@ class ContactTagAdditionTests(TestCase):
         contact.add_tag("111")
         self.assertEqual(contact._tags, set(["111"]))
         contact.add_tag("222")
-        self.assertEqual(contact._tags, set(["111", '222']))
+        self.assertEqual(contact._tags, set(["111", "222"]))
 
 
     def test_tags_must_be_str(self):
         contact = Contact("Marvin Goodwright")
         with self.assertRaises(TypeError):
             contact.add_tag(100)
+
+
+
+class ContactTagRemovalTests(TestCase):
+
+    def test_can_removal_tags(self):
+        contact = Contact("Marvin Goodwright")
+        contact._tags = set(["aaa", "bbb"])
+        contact.remove_tag("aaa")
+        self.assertEqual(contact._tags, set(["bbb"]))
