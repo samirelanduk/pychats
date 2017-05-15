@@ -42,10 +42,11 @@ class ContactToJsonTests(TestCase):
 class JsonToContactTests(TestCase):
 
     def test_can_make_contact_from_json(self):
-        json = {"name": "Lord Asriel"}
+        json = {"name": "Lord Asriel", "tags": ["aaa", "ddd", "zzz"]}
         contact = json_to_contact(json)
         self.assertIsInstance(contact, Contact)
         self.assertEqual(contact._name, "Lord Asriel")
+        self.assertEqual(contact._tags, set(["aaa", "ddd", "zzz"]))
 
 
     def test_contact_from_json_requires_dict(self):
@@ -55,4 +56,9 @@ class JsonToContactTests(TestCase):
 
     def test_contact_from_json_requires_name_key(self):
         with self.assertRaises(ValueError):
-            json_to_contact({"wrongkey": "Lord Asriel"})
+            json_to_contact({"wrongkey": "Lord Asriel", "tags": []})
+
+
+    def test_contact_from_json_requires_tags_key(self):
+        with self.assertRaises(ValueError):
+            json_to_contact({"wrongkey": [], "name": "Asriel"})

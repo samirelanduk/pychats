@@ -26,4 +26,8 @@ def json_to_contact(json):
         raise TypeError("'%s' is not a dict" % str(json))
     if "name" not in json:
         raise ValueError("Contact json must have 'name' key: %s" % str(json))
-    return Contact(json["name"])
+    if "tags" not in json:
+        raise ValueError("Contact json must have 'tags' key: %s" % str(json))
+    contact = Contact(json["name"])
+    contact._tags = set(json["tags"])
+    return contact
