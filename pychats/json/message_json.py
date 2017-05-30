@@ -1,6 +1,7 @@
 """This module handles the conversion of Message objects to JSON and back."""
 
 from ..chats.messages import Message
+from .contact_json import contact_to_json
 
 def message_to_json(message):
     """Takes a :py:class:`.Message` and converts it to a JSON dict.
@@ -14,5 +15,5 @@ def message_to_json(message):
     return {
      "text": message.text(),
      "timestamp": message.timestamp().strftime("%Y-%m-%d %H:%M:%S"),
-     "sender": message.sender().name()
+     "sender": contact_to_json(message.sender())
     }
