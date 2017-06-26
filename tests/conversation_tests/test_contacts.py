@@ -15,6 +15,32 @@ class ContactCreationTests(TestCase):
 
 
 
+class ContactFromJsonTests(TestCase):
+
+    def test_can_make_contact_from_json(self):
+        json = {"name": "Lord Asriel", "tags": ["aaa", "ddd", "zzz"]}
+        contact = Contact.from_json(json)
+        self.assertIsInstance(contact, Contact)
+        self.assertEqual(contact._name, "Lord Asriel")
+        self.assertEqual(contact._tags, set(["aaa", "ddd", "zzz"]))
+
+
+    def test_contact_from_json_requires_dict(self):
+        with self.assertRaises(TypeError):
+            Contact.from_json("some string")
+
+
+    def test_contact_from_json_requires_name_key(self):
+        with self.assertRaises(ValueError):
+            Contact.from_json({"wrongkey": "Lord Asriel", "tags": []})
+
+
+    def test_contact_from_json_requires_tags_key(self):
+        with self.assertRaises(ValueError):
+            Contact.from_json({"wrongkey": [], "name": "Asriel"})
+
+
+
 class ContactReprTests(TestCase):
 
     def test_contacts_repr(self):
@@ -77,3 +103,31 @@ class ContactTagRemovalTests(TestCase):
         contact._tags = set(["aaa", "bbb"])
         contact.remove_tag("aaa")
         self.assertEqual(contact._tags, set(["bbb"]))
+
+
+
+class ContactToJsonTests(TestCase):
+
+    def test_can_make_json_from_contact(self):
+        contact = Contact("Lord Asriel")
+        contact._tags = set()
+        json = contact.to_json()
+        self.assertEqual(json, {"name": "Lord Asriel", "tags": []})
+
+
+    def test_can_make_tags_json_from_contact(self):
+        contact = Contact("Lord Asriel")
+        contact._tags = set(["aaa"])
+        json = contact.to_json()
+        self.assertEqual(json, {
+         "name": "Lord Asriel", "tags": ["aaa"]
+        })
+
+
+    def test_tags_json_is_ordered(self):
+        contact = Contact("Lord Asriel")
+        contact._tags = set(["ddd", "zzz", "aaa"])
+        json = contact.to_json()
+        self.assertEqual(json, {
+         "name": "Lord Asriel", "tags": ["aaa", "ddd", "zzz"]
+        })

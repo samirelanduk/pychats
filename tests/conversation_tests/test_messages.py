@@ -49,6 +49,71 @@ class MessageCreationTests(MessageTest):
 
 
 
+class MessageFromJsonTests(TestCase):
+
+    def test_can_make_message_with_existing_contact(self):
+        contact1 = Mock(Contact)
+        contact1.name.return_value = "Justin Powers"
+        contact2 = Mock(Contact)
+        contact2.name.return_value = "Lydia Powers"
+        json = {
+         "text": "message text",
+         "timestamp": "2009-05-23 12:12:01",
+         "sender": {"name": "Justin Powers", "tags": ["tag1", "tag2"]}
+        }
+        message = Message.from_json(json, [contact1, contact2])
+        self.assertEqual(message._text, "message text")
+        self.assertEqual(message._timestamp, datetime(2009, 5, 23, 12, 12, 1))
+        self.assertIs(message._sender, contact1)
+
+
+    @patch("pychats.chats.messages.Contact.from_json")
+    def test_can_make_message_with_new_contact(self, mock_contact):
+        contact1 = Mock(Contact)
+        contact1.name.return_value = "Justin Powers"
+        contact2 = Mock(Contact)
+        contact2.name.return_value = "Lydia Powers"
+        contact3 = Mock(Contact)
+        mock_contact.return_value = contact3
+        json = {
+         "text": "message text",
+         "timestamp": "2009-05-23 12:12:01",
+         "sender": {"name": "Marvin Powers", "tags": ["tag1", "tag2"]}
+        }
+        message = Message.from_json(json, [contact1, contact2])
+        mock_contact.assert_called()
+        self.assertEqual(message._text, "message text")
+        self.assertEqual(message._timestamp, datetime(2009, 5, 23, 12, 12, 1))
+        self.assertIs(message._sender, contact3)
+
+
+    def test_json_to_message_requires_dict(self):
+        with self.assertRaises(TypeError):
+            Message.from_json("some string")
+
+
+    def test_json_to_message_requires_text_key(self):
+        with self.assertRaises(ValueError):
+            Message.from_json({"wrong": "txt", "timestamp": "", "sender": ""}, [])
+
+
+    def test_json_to_message_requires_timestamp_key(self):
+        with self.assertRaises(ValueError):
+            Message.from_json({"text": "txt", "wrong": "", "sender": ""}, [])
+
+
+    def test_json_to_message_requires_sender_key(self):
+        with self.assertRaises(ValueError):
+            Message.from_json({"text": "txt", "timestamp": "", "wrong": ""}, [])
+
+
+    def test_json_to_message_needs_contacts(self):
+        with self.assertRaises(TypeError):
+            Message.from_json({"text": "", "timestamp": "", "sender": ""}, ["s"])
+
+
+
+
 class MessageReprTests(MessageTest):
 
     def test_message_repr(self):
@@ -190,62 +255,19 @@ class MessageRecipientTests(MessageTest):
 
 
 
-'''
+class MessageToJsonTests(TestCase):
 
-
-
-
-
-
-
-    def test_updating_timestamp_will_make_message_rearrange_in_conversation(self):
-        conversation = Conversation()
-        message1 = Message(
-         "memento mori",
-         datetime(2011, 3, 1, 10, 34, 32),
-         self.contact
+    def test_can_make_json_from_message(self):
+        contact = Mock(Contact)
+        contact.name.return_value = "Justin Powers"
+        message = Message(
+         "message text", datetime(2009, 5, 23, 12, 12, 1), contact
         )
-        message2 = Message(
-         "memento mori",
-         datetime(2011, 3, 1, 11, 34, 32),
-         self.contact
-        )
-        conversation.add_message(message1)
-        conversation.add_message(message2)
-        conversation.add_message(message)
-        self.assertEqual(
-         conversation.messages(),
-         [message1, message2, message]
-        )
-        message.timestamp(datetime(2011, 3, 1, 12, 0, 0))
-        self.assertEqual(
-         conversation.messages(),
-         [message1, message2, message]
-        )
-        message.timestamp(datetime(2011, 3, 1, 11, 0, 0))
-        self.assertEqual(
-         conversation.messages(),
-         [message1, message, message2]
-        )
-        message.timestamp(datetime(2011, 3, 1, 10, 0, 0))
-        self.assertEqual(
-         conversation.messages(),
-         [message, message1, message2]
-        )
-
-
-
-    def test_message_recipients_is_empty_when_no_conversation(self):
-        self.assertEqual(message.recipients(), set())
-
-
-    def test_can_get_message_recipients_from_conversation(self):
-        conversation = Mock(Conversation)
-        conversation.participants.return_value = set(
-         [self.contact, self.contact2, self.contact3]
-        )
-        message._conversation = conversation
-        self.assertEqual(
-         message.recipients(),
-         set([self.contact2, self.contact3])
-        )'''
+        contact.to_json.return_value = {"name": "J"}
+        json = message.to_json()
+        contact.to_json.assert_called()
+        self.assertEqual(json, {
+         "text": "message text",
+         "timestamp": "2009-05-23 12:12:01",
+         "sender": {"name": "J"}
+        })

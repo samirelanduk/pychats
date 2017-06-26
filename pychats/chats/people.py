@@ -12,6 +12,27 @@ class Contact:
         self._tags = set()
 
 
+    @staticmethod
+    def from_json(json):
+        """Creates a py:class:`.Contact` from a JSON ``dict``.
+
+        :param dict json: The ``dict`` to convert.
+        :raises TypeError: if something other than a ``dict`` is given.
+        :raises ValueError: if the ``dict`` doesn't have a ``name`` key.
+        :raises ValueError: if the ``dict`` doesn't have a ``tags`` key.
+        :rtype: ``Contact``"""
+
+        if not isinstance(json, dict):
+            raise TypeError("'%s' is not a dict" % str(json))
+        if "name" not in json:
+            raise ValueError("Contact json must have 'name' key: %s" % str(json))
+        if "tags" not in json:
+            raise ValueError("Contact json must have 'tags' key: %s" % str(json))
+        contact = Contact(json["name"])
+        contact._tags = set(json["tags"])
+        return contact
+
+
     def __repr__(self):
         return "<Contact: %s>" % self._name
 
@@ -56,3 +77,14 @@ class Contact:
         :param str tag: The tag to remove."""
 
         self._tags.remove(tag)
+
+
+    def to_json(self):
+        """Converts the Contact to a JSON dict.
+
+        :rtype: ``dict``"""
+
+        return {
+         "name": self.name(),
+         "tags": sorted(list(self._tags))
+        }
