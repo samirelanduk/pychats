@@ -98,7 +98,7 @@ class ContactTagAdditionTests(TestCase):
 
 class ContactTagRemovalTests(TestCase):
 
-    def test_can_removal_tags(self):
+    def test_can_remove_tags(self):
         contact = Contact("Marvin Goodwright")
         contact._tags = set(["aaa", "bbb"])
         contact.remove_tag("aaa")

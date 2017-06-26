@@ -25,13 +25,14 @@ class Message:
 
     @staticmethod
     def from_json(json, contacts):
-        """Creates a py:class:`.Message` from a JSON ``dict``.
+        """An alternate constructor. It creates a py:class:`.Message` from a
+        JSON ``dict``.
 
         You must also supply an iterable of zero or more py:class:`.Contact`
         objects - if the name of sender in the JSON matches one of these people,
-        that object will be set as the sender. Otherwise a new py:class:`.Contact`
-        will be created. Otherwise a new py:class:`.Contact` would be created for
-        each message.
+        that object will be set as the sender, and if not a new
+        py:class:`.Contact` will be created. Otherwise a new py:class:`.Contact`
+        would be created for each message.
 
         :param dict json: The ``dict`` to convert.
         :param contacts: An iterable of py:class:`.Contact` objects.
@@ -39,17 +40,17 @@ class Message:
         :raises ValueError: if the ``dict`` doesn't have a ``text`` key.
         :raises ValueError: if the ``dict`` doesn't have a ``timestamp`` key.
         :raises ValueError: if the ``dict`` doesn't have a ``sender`` key.
-        :raises TypeError: if none py:class:`.Contact` objects are given.
+        :raises TypeError: if no py:class:`.Contact` objects are given.
         :rtype: ``Message``"""
-        
+
         if not isinstance(json, dict):
             raise TypeError("'%s' is not a dict" % str(json))
         if "text" not in json:
-            raise ValueError("Message json must have 'text' key: %s" % str(json))
+            raise ValueError("Message json needs 'text' key: %s" % str(json))
         if "timestamp" not in json:
-            raise ValueError("Message json must have 'timestamp' key: %s" % str(json))
+            raise ValueError("Message json needs 'timestamp' key: %s" % str(json))
         if "sender" not in json:
-            raise ValueError("Message json must have 'sender' key: %s" % str(json))
+            raise ValueError("Message json needs 'sender' key: %s" % str(json))
         for contact in contacts:
             if not isinstance(contact, Contact):
                 raise TypeError("'%s' is not a Contact" % str(contact))

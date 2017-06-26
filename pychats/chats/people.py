@@ -14,7 +14,8 @@ class Contact:
 
     @staticmethod
     def from_json(json):
-        """Creates a py:class:`.Contact` from a JSON ``dict``.
+        """An alternate constructor. It creates a py:class:`.Contact` from a
+        JSON ``dict``.
 
         :param dict json: The ``dict`` to convert.
         :raises TypeError: if something other than a ``dict`` is given.
@@ -29,7 +30,8 @@ class Contact:
         if "tags" not in json:
             raise ValueError("Contact json must have 'tags' key: %s" % str(json))
         contact = Contact(json["name"])
-        contact._tags = set(json["tags"])
+        for tag in json["tags"]:
+            contact.add_tag(tag)
         return contact
 
 

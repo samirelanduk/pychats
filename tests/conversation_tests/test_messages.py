@@ -260,14 +260,15 @@ class MessageToJsonTests(TestCase):
     def test_can_make_json_from_message(self):
         contact = Mock(Contact)
         contact.name.return_value = "Justin Powers"
+        contact.tags.return_value = set(["aaa"])
         message = Message(
          "message text", datetime(2009, 5, 23, 12, 12, 1), contact
         )
-        contact.to_json.return_value = {"name": "J"}
+        contact.to_json.return_value = {"name": "J", "tags": ["aaa"]}
         json = message.to_json()
         contact.to_json.assert_called()
         self.assertEqual(json, {
          "text": "message text",
          "timestamp": "2009-05-23 12:12:01",
-         "sender": {"name": "J"}
+         "sender": {"name": "J", "tags": ["aaa"]}
         })
