@@ -11,6 +11,26 @@ class Conversation:
         self._chatlog = None
 
 
+    @staticmethod
+    def from_json(json):
+        """An alternate constructor. It creates a py:class:`.Conversation` from
+        a JSON ``dict``.
+
+        :param dict json: The ``dict`` to convert.
+        :raises TypeError: if something other than a ``dict`` is given.
+        :raises ValueError: if the ``dict`` doesn't have a ``messages`` key.
+        :rtype: ``Conversation``"""
+
+        if not isinstance(json, dict):
+            raise TypeError("'%s' is not a dict" % str(json))
+        if "messages" not in json:
+            raise ValueError("Conversation json needs 'messages' key: %s" % str(json))
+        messages = [Message.from_json(m) for m in json["messages"]]
+        conversation = Conversation()
+        conversation._messages = messages
+        return conversation
+
+
     def __repr__(self):
         return "<Conversation (%i message%s)>" % (
          len(self._messages), "" if len(self._messages) == 1 else "s"
