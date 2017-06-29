@@ -155,8 +155,6 @@ class Message:
     def to_json(self):
         """Takes a :py:class:`.Message` and converts it to a JSON dict.
 
-        :param Message message: the message object to convert.
-        :raises TypeError: if something other than a py:class:`.Message` is given.
         :rtype: ``dict``"""
 
         return {

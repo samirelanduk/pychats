@@ -231,3 +231,16 @@ class SortMessagesTests(ConversationTest):
     def test_can_sort_messages(self):
         messages = self.messages[2:5][::-1] + self.messages[:2]
         self.assertEqual(_sort_messages(messages), self.messages)
+
+
+
+class ConversationToJsonTests(ConversationTest):
+
+    def test_can_get_json_from_conversation(self):
+        self.messages[0].to_json.return_value = {"aa": "bb"}
+        self.messages[1].to_json.return_value = {"cc": "dd"}
+        conversation = Conversation()
+        conversation._messages = self.messages[:2]
+        self.assertEqual(
+         conversation.to_json(), {"messages": [{"aa": "bb"}, {"cc": "dd"}]}
+        )

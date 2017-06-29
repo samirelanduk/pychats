@@ -100,6 +100,14 @@ class Conversation:
         return participants
 
 
+    def to_json(self):
+        """Takes a :py:class:`.Conversation` and converts it to a JSON dict.
+
+        :rtype: ``dict``"""
+
+        return {"messages": [message.to_json() for message in self._messages]}
+
+
 
 def _sort_messages(messages):
     return sorted(messages, key=lambda k: k.timestamp())
