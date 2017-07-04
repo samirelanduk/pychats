@@ -11,6 +11,10 @@ class Conversation:
         self._chatlog = None
 
 
+    def __len__(self):
+        return self.length()
+
+
     @staticmethod
     def from_json(json):
         """An alternate constructor. It creates a py:class:`.Conversation` from
@@ -78,6 +82,14 @@ class Conversation:
 
         self._messages.remove(message)
         message._conversation = None
+
+
+    def length(self):
+        """Returns the number of messages in the conversation.
+
+        :rtype: ``int``"""
+
+        return len(self._messages)
 
 
     def chatlog(self):

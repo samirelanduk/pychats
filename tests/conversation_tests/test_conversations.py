@@ -77,6 +77,16 @@ class ConversationReprTests(ConversationTest):
 
 
 
+class ConversationLenTests(ConversationTest):
+
+    @patch("pychats.chats.conversations.Conversation.length")
+    def test_len_returns_length(self, mock_length):
+        mock_length.return_value = 23
+        conversation = Conversation()
+        self.assertEqual(len(conversation), 23)
+
+
+
 class ConversationMessagesTests(ConversationTest):
 
     def test_messages_returns_messages(self):
@@ -156,6 +166,15 @@ class ConversationMessageRemovalTests(ConversationTest):
         self.assertIs(self.messages[0]._conversation, conversation)
         conversation.remove_message(self.messages[0])
         self.assertIs(self.messages[0]._conversation, None)
+
+
+
+class ConversationLengthTests(ConversationTest):
+
+    def test_length_returns_number_of_messages(self):
+        conversation = Conversation()
+        conversation._messages = self.messages
+        self.assertEqual(conversation.length(), 5)
 
 
 
