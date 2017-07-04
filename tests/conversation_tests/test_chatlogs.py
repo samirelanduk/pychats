@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from pychats.chats.conversations import Conversation
 from pychats.chats.chatlogs import ChatLog
 
@@ -23,6 +23,41 @@ class ChatlogCreationTests(ChatlogTest):
     def test_chatlog_name_must_be_str(self):
         with self.assertRaises(TypeError):
             ChatLog(1000)
+
+
+
+class ChatlogFromJsonTests(TestCase):
+
+    @patch("pychats.chats.chatlogs.Conversation.from_json")
+    def test_can_create_conversation_from_json(self, mock_conversation):
+        conv1, conv2, conv3 = Mock(), Mock(), Mock()
+        mock_conversation.side_effect = [conv1, conv2, conv3]
+        json = {
+         "name": "Log Name",
+         "conversations": ["conv1", "conv2", "conv3"]
+        }
+        log = ChatLog.from_json(json)
+        mock_conversation.assert_any_call("conv1")
+        mock_conversation.assert_any_call("conv2")
+        mock_conversation.assert_any_call("conv3")
+        self.assertIsInstance(log, ChatLog)
+        self.assertEqual(log._name, "Log Name")
+        self.assertEqual(log._conversations, [conv1, conv2, conv3])
+
+
+    def test_json_to_chatlog_requires_dict(self):
+        with self.assertRaises(TypeError):
+            ChatLog.from_json("some string")
+
+
+    def test_json_to_chatlog_requires_name_key(self):
+        with self.assertRaises(ValueError):
+            ChatLog.from_json({"wrong": "name"})
+
+
+    def test_json_to_chatlog_requires_conversations_key(self):
+        with self.assertRaises(ValueError):
+            ChatLog.from_json({"wrong": []})
 
 
 
