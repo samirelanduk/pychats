@@ -33,36 +33,12 @@ class ConversationFromJsonTests(TestCase):
         message1, message2, message3 = Mock(), Mock(), Mock()
         mock_message.side_effect = [message1, message2, message3]
         json = {
-         "messages": [{
-          "text": "message text 1",
-          "timestamp": "2009-05-23 12:12:01",
-          "sender": {"name": "Justin Powers", "tags": ["tag1", "tag2"]}
-         }, {
-          "text": "message text 2",
-          "timestamp": "2009-05-23 12:13:01",
-          "sender": {"name": "Joe Blake", "tags": ["tag3", "tag4"]}
-         }, {
-          "text": "message text 3",
-          "timestamp": "2009-05-23 12:14:01",
-          "sender": {"name": "Justin Powers", "tags": ["tag1", "tag2"]}
-         }]
+         "messages": ["message1", "message2", "message3"]
         }
         conversation = Conversation.from_json(json)
-        mock_message.assert_any_call({
-         "text": "message text 1",
-         "timestamp": "2009-05-23 12:12:01",
-         "sender": {"name": "Justin Powers", "tags": ["tag1", "tag2"]}
-        })
-        mock_message.assert_any_call({
-         "text": "message text 2",
-         "timestamp": "2009-05-23 12:13:01",
-         "sender": {"name": "Joe Blake", "tags": ["tag3", "tag4"]}
-        })
-        mock_message.assert_any_call({
-         "text": "message text 3",
-         "timestamp": "2009-05-23 12:14:01",
-         "sender": {"name": "Justin Powers", "tags": ["tag1", "tag2"]}
-        })
+        mock_message.assert_any_call("message1")
+        mock_message.assert_any_call("message2")
+        mock_message.assert_any_call("message3")
         self.assertIsInstance(conversation, Conversation)
         self.assertEqual(conversation._messages, [message1, message2, message3])
 
