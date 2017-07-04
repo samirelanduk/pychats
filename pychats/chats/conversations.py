@@ -113,7 +113,7 @@ class Conversation:
 
 
     def to_json(self):
-        """Takes a :py:class:`.Conversation` and converts it to a JSON dict.
+        """Converts the Conversation to a JSON dict.
 
         :rtype: ``dict``"""
 

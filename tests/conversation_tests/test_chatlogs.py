@@ -26,7 +26,7 @@ class ChatlogCreationTests(ChatlogTest):
 
 
 
-class ChatlogFromJsonTests(TestCase):
+class ChatlogFromJsonTests(ChatlogTest):
 
     @patch("pychats.chats.chatlogs.Conversation.from_json")
     def test_can_create_conversation_from_json(self, mock_conversation):
@@ -163,3 +163,18 @@ class ChatlogConversationRemovalTests(ChatlogTest):
         )
         chatlog.remove_conversation(self.conversation1)
         self.assertEqual(chatlog._conversations, set([self.conversation2]))
+
+
+
+class ChatLogToJsonTests(ChatlogTest):
+
+    def test_can_get_json_from_chatlog(self):
+        self.conversation1.to_json.return_value = {"aa": "bb"}
+        self.conversation2.to_json.return_value = {"cc": "dd"}
+        self.conversation1.length.return_value = 100
+        self.conversation2.length.return_value = 101
+        log = ChatLog("test log")
+        log._conversations = set([self.conversation1, self.conversation2])
+        self.assertEqual(log.to_json(), {
+         "name": "test log", "conversations": [{"cc": "dd"}, {"aa": "bb"}]
+        })

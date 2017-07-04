@@ -95,3 +95,16 @@ class ChatLog:
         :param Conversation conversation: the conversation to remove."""
 
         self._conversations.remove(conversation)
+
+
+    def to_json(self):
+        """Converts the ChatLog to a JSON dict.
+
+        :rtype: ``dict``"""
+
+        return {
+         "name": self._name,
+         "conversations": [conv.to_json() for conv in sorted(
+          self._conversations, key=lambda k: k.length(), reverse=True
+         )]
+        }

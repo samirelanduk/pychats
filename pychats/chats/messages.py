@@ -153,7 +153,7 @@ class Message:
 
 
     def to_json(self):
-        """Takes a :py:class:`.Message` and converts it to a JSON dict.
+        """Converts the Message to a JSON dict.
 
         :rtype: ``dict``"""
 
