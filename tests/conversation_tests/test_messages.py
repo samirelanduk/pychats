@@ -61,7 +61,8 @@ class MessageFromJsonTests(TestCase):
          "timestamp": "2009-05-23 12:12:01",
          "sender": {"name": "Justin Powers", "tags": ["tag1", "tag2"]}
         }
-        message = Message.from_json(json, [contact1, contact2])
+        Contact.all_contacts = set([contact1, contact2])
+        message = Message.from_json(json)
         self.assertEqual(message._text, "message text")
         self.assertEqual(message._timestamp, datetime(2009, 5, 23, 12, 12, 1))
         self.assertIs(message._sender, contact1)
@@ -80,7 +81,8 @@ class MessageFromJsonTests(TestCase):
          "timestamp": "2009-05-23 12:12:01",
          "sender": {"name": "Marvin Powers", "tags": ["tag1", "tag2"]}
         }
-        message = Message.from_json(json, [contact1, contact2])
+        Contact.all_contacts = set([contact1, contact2])
+        message = Message.from_json(json)
         mock_contact.assert_called()
         self.assertEqual(message._text, "message text")
         self.assertEqual(message._timestamp, datetime(2009, 5, 23, 12, 12, 1))
@@ -94,23 +96,17 @@ class MessageFromJsonTests(TestCase):
 
     def test_json_to_message_requires_text_key(self):
         with self.assertRaises(ValueError):
-            Message.from_json({"wrong": "txt", "timestamp": "", "sender": ""}, [])
+            Message.from_json({"wrong": "txt", "timestamp": "", "sender": ""})
 
 
     def test_json_to_message_requires_timestamp_key(self):
         with self.assertRaises(ValueError):
-            Message.from_json({"text": "txt", "wrong": "", "sender": ""}, [])
+            Message.from_json({"text": "txt", "wrong": "", "sender": ""})
 
 
     def test_json_to_message_requires_sender_key(self):
         with self.assertRaises(ValueError):
-            Message.from_json({"text": "txt", "timestamp": "", "wrong": ""}, [])
-
-
-    def test_json_to_message_needs_contacts(self):
-        with self.assertRaises(TypeError):
-            Message.from_json({"text": "", "timestamp": "", "sender": ""}, ["s"])
-
+            Message.from_json({"text": "txt", "timestamp": "", "wrong": ""})
 
 
 

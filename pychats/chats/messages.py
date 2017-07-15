@@ -24,7 +24,7 @@ class Message:
 
 
     @staticmethod
-    def from_json(json, contacts):
+    def from_json(json):
         """An alternate constructor. It creates a py:class:`.Message` from a
         JSON ``dict``.
 
@@ -51,11 +51,8 @@ class Message:
             raise ValueError("Message json needs 'timestamp' key: %s" % str(json))
         if "sender" not in json:
             raise ValueError("Message json needs 'sender' key: %s" % str(json))
-        for contact in contacts:
-            if not isinstance(contact, Contact):
-                raise TypeError("'%s' is not a Contact" % str(contact))
         sender = None
-        for person in contacts:
+        for person in Contact.all_contacts:
             if person.name() == json["sender"]["name"]:
                 sender = person
                 break

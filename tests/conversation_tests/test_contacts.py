@@ -14,6 +14,14 @@ class ContactCreationTests(TestCase):
             Contact(111)
 
 
+    def test_creating_contact_updates_registry(self):
+        while Contact.all_contacts: Contact.all_contacts = set()
+        contact1 = Contact("Marvin Goodwright")
+        self.assertEqual(Contact.all_contacts, set([contact1]))
+        contact2 = Contact("Marvin Goodwright II")
+        self.assertEqual(Contact.all_contacts, set([contact1, contact2]))
+
+
 
 class ContactFromJsonTests(TestCase):
 

@@ -1,5 +1,6 @@
 """This module contains the Chatlog class."""
 
+import json
 from .conversations import Conversation
 
 class ChatLog:
@@ -108,3 +109,13 @@ class ChatLog:
           self._conversations, key=lambda k: k.length(), reverse=True
          )]
         }
+
+
+
+def from_json(path):
+    """Creates a JSON object from a JSON file at the specified path.
+
+    :path str path: The path to the JSON file."""
+    
+    with open(path) as f:
+        return ChatLog.from_json(json.load(f))

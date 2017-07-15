@@ -1,7 +1,7 @@
 from unittest import TestCase
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 from pychats.chats.conversations import Conversation
-from pychats.chats.chatlogs import ChatLog
+from pychats.chats.chatlogs import ChatLog, from_json
 
 class ChatlogTest(TestCase):
 
@@ -178,3 +178,24 @@ class ChatLogToJsonTests(ChatlogTest):
         self.assertEqual(log.to_json(), {
          "name": "test log", "conversations": [{"cc": "dd"}, {"aa": "bb"}]
         })
+
+
+
+class JsonFileLoadingTests(ChatlogTest):
+
+    @patch("pychats.chats.chatlogs.ChatLog.from_json")
+    @patch("json.load")
+    @patch("builtins.open")
+    def test_loading_from_json_file(self, mock_open, mock_load, mock_json):
+        open_return = MagicMock()
+        mock_file = Mock()
+        open_return.__enter__.return_value = mock_file
+        mock_file.read.return_value = '{"a": "b"}'
+        mock_open.return_value = open_return
+        mock_load.return_value = {"a": "b"}
+        mock_json.return_value = "log object"
+        log = from_json("path/to/file")
+        mock_open.assert_called_with("path/to/file")
+        mock_load.assert_called_with(mock_file)
+        mock_json.assert_called_with({"a": "b"})
+        self.assertEqual(log, "log object")
