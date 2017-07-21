@@ -199,3 +199,23 @@ class JsonFileLoadingTests(ChatlogTest):
         mock_load.assert_called_with(mock_file)
         mock_json.assert_called_with({"a": "b"})
         self.assertEqual(log, "log object")
+
+
+
+class JsonFileSavingTests(ChatlogTest):
+
+    @patch("pychats.chats.chatlogs.ChatLog.to_json")
+    @patch("json.dump")
+    @patch("builtins.open")
+    def test_loading_from_json_file(self, mock_open, mock_dump, mock_json):
+        open_return = MagicMock()
+        mock_file = Mock()
+        mock_write = MagicMock()
+        mock_file.write = mock_write
+        open_return.__enter__.return_value = mock_file
+        mock_open.return_value = open_return
+        log = ChatLog("Test")
+        mock_json.return_value = {"a": [{}]}
+        log.save("path/to/file")
+        mock_open.assert_called_once_with("path/to/file", "w")
+        mock_dump.assert_called_with({"a": [{}]}, mock_file)

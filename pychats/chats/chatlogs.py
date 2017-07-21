@@ -111,11 +111,16 @@ class ChatLog:
         }
 
 
+    def save(self, path):
+        with open(path, "w") as f:
+            json.dump(self.to_json(), f)
+
+
 
 def from_json(path):
     """Creates a JSON object from a JSON file at the specified path.
 
     :path str path: The path to the JSON file."""
-    
+
     with open(path) as f:
         return ChatLog.from_json(json.load(f))
