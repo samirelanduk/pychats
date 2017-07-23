@@ -79,6 +79,14 @@ is done with the ``Contact`` class:
   >>> hermione.name()
   'Hermione Granger'
 
+You can give these people 'tags' to categorise them:
+
+  >>> harry.add_tag("wizard")
+  >>> harry.add_tag("gryffindor")
+  >>> harry.tags()
+  {'wizard', 'gryffindor'}
+
+
 Conversations and Messages
 ##########################
 
@@ -132,10 +140,38 @@ Once added, conversations will know what chatlog they are in:
   <'Hogwarts Data Breach' ChatLog (1 Conversation)>
 
 
+Storing ChatLogs as JSON
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+ChatLogs have a ``ChatLog.save`` method which will save the while
+structure to file as JSON. You can call ``from_json`` to recreate
+the structure.
+
+  >>> log.save("backup.json")
+  >>> recovered_log = pychats.from_json("backup.json")
+
+Contacts, Messages, Conversations and ChatLogs all have ``to_json`` methods and
+``from_json`` alternative constructors to individually convert them to and from
+JSON if needed.
+
+  >>> message1.to_json()
+  {'text': 'Hi!', 'timestamp': '1993-01-05 08:07:00', 'sender': {'name': 'Harry
+  Potter', 'tags': []}}
+
+
 Changelog
 ---------
 
-Release 0.1.0
+Release 2.1.0
+~~~~~~~~~~~~~
+
+`23 July 2017`
+
+* Added JSON input and output.
+* Gave Contact objects tags.
+
+
+Release 2.0.0
 ~~~~~~~~~~~~~
 
 `9 May 2017`
