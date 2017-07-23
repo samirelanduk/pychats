@@ -112,6 +112,10 @@ class ChatLog:
 
 
     def save(self, path):
+        """Saves the ChatLog to a JSON file.
+
+        :param str path: The file to save it to."""
+        
         with open(path, "w") as f:
             json.dump(self.to_json(), f)
 
