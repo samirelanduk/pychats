@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 import pychats.parse.facebook as fb
 from bs4 import BeautifulSoup
 from bs4.element import Tag
@@ -37,7 +37,7 @@ class ThreadToJSONTests(TestCase):
         <span class="meta">Friday, 19 August 2016 at 13:15 UTC+01</span>
         </div></div><p>Hello!</p></div></div>""", "html.parser").find("div")
         json = fb.thread_to_json(thread)
-        self.assertEqual(json, [{
+        self.assertEqual(json, {"messages": [{
          "text": "Hello?",
          "sender": {"name": "John Ronn", "tags": []},
          "timestamp": "2016-08-19 13:13:00"
@@ -45,7 +45,7 @@ class ThreadToJSONTests(TestCase):
          "text": "Hello!",
          "sender": {"name": "Myke", "tags": []},
          "timestamp": "2016-08-19 13:15:00"
-        }])
+        }]})
 
 
     def test_html_to_thread_requires_thread(self):
@@ -74,3 +74,21 @@ class HtmlToChatLogTests(TestCase):
          {"name": "Facebook", "conversations": [["a", "b"], ["c", "d"]]}
         )
         self.assertIs(log, chatlog)
+
+
+
+class FacebookFileLoadingTests(TestCase):
+
+    @patch("pychats.parse.facebook.html_to_chatlog")
+    @patch("builtins.open")
+    def test_loading_from_json_file(self, mock_open, mock_html):
+        open_return = MagicMock()
+        mock_file = Mock()
+        open_return.__enter__.return_value = mock_file
+        mock_file.read.return_value = "<html>"
+        mock_open.return_value = open_return
+        mock_html.return_value = "log object"
+        log = fb.from_facebook("path/to/file")
+        mock_open.assert_called_with("path/to/file")
+        mock_html.assert_called_with("<html>")
+        self.assertEqual(log, "log object")

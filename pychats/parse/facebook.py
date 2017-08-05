@@ -44,7 +44,7 @@ def thread_to_json(thread):
          "sender": {"tags": [], "name": name},
          "timestamp": date.strftime("%Y-%m-%d %H:%M:%S")
         })
-    return json
+    return {"messages": json}
 
 
 def html_to_chatlog(html):
@@ -57,3 +57,15 @@ def html_to_chatlog(html):
     threads = html_to_threads(html)
     convs = [thread_to_json(thread) for thread in threads]
     return ChatLog.from_json({"name": "Facebook", "conversations": convs})
+
+
+def from_facebook(path):
+    """Opens a HTML file at the path specified and produces a pychats
+    :py:class:`.ChatLog` from it.
+
+    :param str path: The location of the HTML file.
+    :rtype: ``ChatLog``"""
+
+    with open(path) as f:
+        html = f.read()
+    return html_to_chatlog(html)
