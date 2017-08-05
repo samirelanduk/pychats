@@ -51,3 +51,26 @@ class ThreadToJSONTests(TestCase):
     def test_html_to_thread_requires_thread(self):
         with self.assertRaises(TypeError):
             fb.thread_to_json("<html>")
+
+
+
+class HtmlToChatLogTests(TestCase):
+
+    @patch("pychats.parse.facebook.html_to_threads")
+    @patch("pychats.parse.facebook.thread_to_json")
+    @patch("pychats.chats.chatlogs.ChatLog.from_json")
+    def test_chatlog_creation(self, from_json, mock_json, mock_threads):
+        html = "<html>"
+        thread1, thread2 = Mock(), Mock()
+        mock_threads.return_value = [thread1, thread2]
+        mock_json.side_effect = [["a", "b"], ["c", "d"]]
+        log = Mock()
+        from_json.return_value = log
+        chatlog = fb.html_to_chatlog(html)
+        mock_threads.assert_called_with("<html>")
+        mock_json.assert_any_call(thread1)
+        mock_json.assert_any_call(thread2)
+        from_json.assert_called_with(
+         {"name": "Facebook", "conversations": [["a", "b"], ["c", "d"]]}
+        )
+        self.assertIs(log, chatlog)

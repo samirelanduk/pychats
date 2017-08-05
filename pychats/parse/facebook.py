@@ -4,6 +4,7 @@ messages.htm files."""
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 from datetime import datetime
+from ..chats.chatlogs import ChatLog
 
 def html_to_threads(html):
     """Takes the html string of a file and gets the thread divs from it as
@@ -44,3 +45,15 @@ def thread_to_json(thread):
          "timestamp": date.strftime("%Y-%m-%d %H:%M:%S")
         })
     return json
+
+
+def html_to_chatlog(html):
+    """Produces a pychats :py:class:`.ChatLog` from the HTML of a Facebook
+    messages.htm filestring
+
+    :param str html: The HTML string.
+    :rtype: ``ChatLog``"""
+
+    threads = html_to_threads(html)
+    convs = [thread_to_json(thread) for thread in threads]
+    return ChatLog.from_json({"name": "Facebook", "conversations": convs})
