@@ -44,7 +44,29 @@ def thread_to_json(thread):
          "sender": {"tags": [], "name": name},
          "timestamp": date.strftime("%Y-%m-%d %H:%M:%S")
         })
-    return {"messages": json}
+    return {"messages": json, "members": list(thread.children)[0].strip().split(", ")}
+
+
+def consolidate_threads(threads):
+    """Takes a list of threads JSON objects and combines those which have the
+    same members, and which have only two members. It then removes the
+    ``members`` key.
+
+    :param list threads: The threads to consolidate."""
+
+    for thread in threads:
+        thread["members"] = sorted(thread["members"])
+    for thread in threads:
+        if thread["messages"] and len(thread["members"]) == 2:
+            matching_threads = [t for t in threads
+             if t["members"] == thread["members"] and thread is not t]
+            for matching_thread in matching_threads:
+                thread["messages"] += matching_thread["messages"]
+                matching_thread["messages"] = []
+    threads = [thread for thread in threads if thread["messages"]]
+    for thread in threads:
+        del thread["members"]
+    return threads
 
 
 def html_to_chatlog(html):
@@ -56,6 +78,7 @@ def html_to_chatlog(html):
 
     threads = html_to_threads(html)
     convs = [thread_to_json(thread) for thread in threads]
+    convs = consolidate_threads(convs)
     return ChatLog.from_json({"name": "Facebook", "conversations": convs})
 
 
