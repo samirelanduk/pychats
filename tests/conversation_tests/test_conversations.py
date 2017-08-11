@@ -28,19 +28,22 @@ class ConversationCreationTests(ConversationTest):
 
 class ConversationFromJsonTests(TestCase):
 
+    @patch("pychats.chats.conversations._sort_messages")
     @patch("pychats.chats.conversations.Message.from_json")
-    def test_can_create_conversation_from_json(self, mock_message):
+    def test_can_create_conversation_from_json(self, mock_message, mock_sort):
         message1, message2, message3 = Mock(), Mock(), Mock()
         mock_message.side_effect = [message1, message2, message3]
         json = {
          "messages": ["message1", "message2", "message3"]
         }
+        mock_sort.side_effect = lambda k: k
         conversation = Conversation.from_json(json)
         mock_message.assert_any_call("message1")
         mock_message.assert_any_call("message2")
         mock_message.assert_any_call("message3")
         self.assertIsInstance(conversation, Conversation)
         self.assertEqual(conversation._messages, [message1, message2, message3])
+        mock_sort.assert_called_with([message1, message2, message3])
 
 
     def test_json_to_conversation_requires_dict(self):

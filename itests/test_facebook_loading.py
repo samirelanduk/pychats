@@ -17,15 +17,15 @@ class Tests(TestCase):
         self.assertEqual(len(conv1.messages()), 6)
         self.assertEqual(conv1.messages()[0].text(), "Hello!")
         self.assertEqual(
-         conv1.messages()[0].timestamp(), datetime(2014, 8, 28, 0, 19, 0)
+         conv1.messages()[0].timestamp(), datetime(2014, 6, 4, 13, 22, 0)
         )
         self.assertEqual(conv1.messages()[0].sender().name(), "John Ronn")
         self.assertEqual(conv1.messages()[-1].text(), "Never mind!")
 
         self.assertEqual(len(conv2.messages()), 5)
-        self.assertEqual(conv1.messages()[0].text(), "Hi all.")
+        self.assertEqual(conv2.messages()[0].text(), "Hi all.")
         self.assertEqual(
-         conv1.messages()[0].timestamp(), datetime(2017, 6, 8, 12, 31, 0)
+         conv2.messages()[0].timestamp(), datetime(2017, 6, 8, 12, 28, 0)
         )
-        self.assertEqual(conv1.messages()[0].sender().name(), "444@facebook.com")
-        self.assertEqual(conv1.messages()[-1].text(), "All things pass into eternity.")
+        self.assertEqual(conv2.messages()[0].sender().name(), "777@facebook.com")
+        self.assertEqual(conv2.messages()[-1].text(), "All things pass into eternity.")

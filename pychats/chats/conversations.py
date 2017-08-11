@@ -30,6 +30,7 @@ class Conversation:
         if "messages" not in json:
             raise ValueError("Conversation json needs 'messages' key: %s" % str(json))
         messages = [Message.from_json(m) for m in json["messages"]]
+        messages = _sort_messages(messages)
         conversation = Conversation()
         conversation._messages = messages
         return conversation

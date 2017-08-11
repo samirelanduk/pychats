@@ -52,6 +52,8 @@ def consolidate_threads(threads):
     same members, and which have only two members. It then removes the
     ``members`` key.
 
+    It will also reverse the messages order in each thread.
+
     :param list threads: The threads to consolidate."""
 
     for thread in threads:
@@ -66,6 +68,7 @@ def consolidate_threads(threads):
     threads = [thread for thread in threads if thread["messages"]]
     for thread in threads:
         del thread["members"]
+        thread["messages"].reverse()
     return threads
 
 

@@ -67,10 +67,10 @@ class ThreadConsolidationTests(TestCase):
         ]
         threads = fb.consolidate_threads(threads)
         self.assertEqual(threads, [
-         {"messages": ["a", "b", "c", "l", "m"]},
-         {"messages": ["d", "e"]},
-         {"messages": ["f", "g", "h"]},
-         {"messages": ["i", "j", "k", "n", "o", "p"]},
+         {"messages": ["m", "l", "c", "b", "a"]},
+         {"messages": ["e", "d"]},
+         {"messages": ["h", "g", "f"]},
+         {"messages": ["p", "o", "n", "k", "j", "i"]},
         ])
 
 
