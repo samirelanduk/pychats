@@ -20,5 +20,5 @@ setup(name="pychats",
                    "Programming Language :: Python :: 3.4",
                    "Programming Language :: Python :: 3.5",
                    "Programming Language :: Python :: 3.6"],
-      packages=["pychats", "pychats.chats"],
-      install_requires=[])
+      packages=["pychats", "pychats.chats", "pychats.parse"],
+      install_requires=["beautifulsoup4"])
