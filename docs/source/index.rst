@@ -1,7 +1,8 @@
 pychats
 =======
 
-pychats is a library for modelling text conversations.
+pychats is a library for modelling text conversations and extracting them from
+external sources, like Facebook.
 
 Example
 -------

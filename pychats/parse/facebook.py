@@ -1,4 +1,4 @@
-"""This module provides the functions for parsing Faceboom backup
+"""This module provides the functions for parsing Facebook backup
 messages.htm files."""
 
 from bs4 import BeautifulSoup

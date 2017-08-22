@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+
+Release 2.2.0
+~~~~~~~~~~~~~
+
+`22 August 2017`
+
+* Added parsing of Facebook message.htm files.
+
+
 Release 2.1.0
 ~~~~~~~~~~~~~
 

@@ -1,5 +1,5 @@
-``pychats.conversations`` (Conversations)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``pychats.chats.conversations`` (Conversations)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: pychats.chats.conversations
     :members:

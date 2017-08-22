@@ -28,4 +28,7 @@ pychats repository directly from there, use:
 Requirements
 ~~~~~~~~~~~~
 
-pychats currently has no external dependencies, and is pure Python.
+pychats requires the
+`BeautifulSoup <https://www.crummy.com/software/BeautifulSoup/>`_ library, for
+parsing Facebook message files. pip will install this automatically when it
+installs pychats.

@@ -87,6 +87,43 @@ Once added, conversations will know what chatlog they are in:
   <'Hogwarts Data Breach' ChatLog (1 Conversation)>
 
 
+ChatLogs from Facebook
+~~~~~~~~~~~~~~~~~~~~~~
+
+A far more useful feature of pychats, is the ability to create a ChatLog from a
+user's actual Facebook message history.
+
+To do this you will first need to download a backup of your Facebook account. If
+you are logged in, Facebook lets you do this from the
+`Facebook settings page <https://www.facebook.com/settings>`_.
+
+Once downloaded, you will need to extract the .zip file you get, and find a file
+called messages.htm - this is a document containing all your Facebook messages.
+
+.. WARNING::
+   This is your Facebook message history. *All* of it. These messages are
+   private information - a lot of it concentrated in a single file - and
+   presumably you don't want anyone else to see this
+   file. Take great care of the messages.htm file, and consider deleting it
+   when you have got the information from it that you need. And consider if you
+   *really* need a JSON copy of it.
+
+   Also bear in mind that a log of a conversation between you and someone else
+   is owned by them as much as you. Do not share a conversation without their
+   consent.
+
+Once this file is found, you create a ChatLog from it with one line:
+
+  >>> facebook_log = pychats.from_facebook("path/to/messages.htm")
+
+You likely have a lot of messages, and this can take many seconds, maybe even a
+minute if it is very large. pychats *is* parsing and extracting data from a very
+large .html file after all.
+
+Once done however, the log works just like the ChatLogs described above. You can
+save it to JSON (see below) or do whatever you want with it.
+
+
 Storing ChatLogs as JSON
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

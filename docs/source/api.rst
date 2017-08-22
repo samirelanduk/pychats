@@ -6,3 +6,4 @@ Full API
     api/messages
     api/conversations
     api/chatlogs
+    api/facebook
