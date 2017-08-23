@@ -72,6 +72,16 @@ class Message:
         )
 
 
+    def __eq__(self, other):
+        try:
+            text_match = self._text == other._text
+            time_match = self._timestamp == other._timestamp
+            sender_match = self._sender is other._sender
+            return text_match and time_match and sender_match
+        except AttributeError:
+            return False
+
+
     def text(self, text=None):
         """Returns the text of the message. If a string is provided, the text
         will be updated to that.

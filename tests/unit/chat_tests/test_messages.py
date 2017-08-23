@@ -123,6 +123,49 @@ class MessageReprTests(MessageTest):
 
 
 
+class MessageEqualityTests(MessageTest):
+
+    def test_messages_equal(self):
+        message1 = Message(
+         "memento mori", datetime(2011, 3, 1, 12, 34, 32), self.contact1
+        )
+        message2 = Mock(Message)
+        message2._text = "memento mori"
+        message2._timestamp = datetime(2011, 3, 1, 12, 34, 32)
+        message2._sender = self.contact1
+        self.assertTrue(message1 == message2)
+        self.assertFalse(message1 != message2)
+
+
+    def test_messages_unequal(self):
+        message1 = Message(
+         "memento mori", datetime(2011, 3, 1, 12, 34, 32), self.contact1
+        )
+        message2 = Mock(Message)
+        message2._text = "mementomori"
+        message2._timestamp = datetime(2011, 3, 1, 12, 34, 32)
+        message2.sender = self.contact1
+        self.assertTrue(message1 != message2)
+        self.assertFalse(message1 == message2)
+        message2._text = "memento mori"
+        message2._timestamp = datetime(2011, 3, 1, 12, 34, 31)
+        self.assertTrue(message1 != message2)
+        self.assertFalse(message1 == message2)
+        message2._timestamp = datetime(2011, 3, 1, 12, 34, 31)
+        message2._sender = "sender"
+        self.assertTrue(message1 != message2)
+        self.assertFalse(message1 == message2)
+
+
+    def test_message_not_equal_non_message(self):
+        message1 = Message(
+         "memento mori", datetime(2011, 3, 1, 12, 34, 32), self.contact1
+        )
+        self.assertFalse(message1 == "message2")
+
+
+
+
 class MessageTextTests(MessageTest):
 
     def test_message_text(self):
