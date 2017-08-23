@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import shutil
 from unittest import TestCase
 import pychats
 
@@ -8,6 +9,8 @@ class Tests(TestCase):
     def tearDown(self):
         if os.path.exists("tests/integration/test_files/temp.json"):
             os.remove("tests/integration/test_files/temp.json")
+        if os.path.exists("tests/integration/test_files/attachments"):
+            shutil.remove("tests/integration/test_files/attachments")
 
 
     def test_load_and_save(self):
@@ -58,3 +61,38 @@ class Tests(TestCase):
         with open("tests/integration/test_files/log.json") as f:
             old = f.read()
         self.assertEqual(new, old)
+
+
+    def test_load_and_save_with_attachments(self):
+        log = pychats.from_json(
+         "tests/integration/test_files/attachment_tests/log.json"
+        )
+        convs = sorted(log.conversations(), key=lambda k: len(k.messages()))
+        self.assertEqual(len(convs), 3)
+        convs.reverse()
+        conv = convs[-1]
+        message = conv.messages()[-2]
+        self.assertEqual(message.text(), "Sure have.")
+
+        attachments = message.attachments()
+        self.assertEqual(len(attachments), 2)
+        self.assertEqual(attachments[0].filename(), "cat1.jpg")
+        self.assertEqual(attachments[1].filename(), "cat2.jpg")
+
+        log.save("tests/integration/test_files/temp.json")
+        with open("tests/integration/test_files/temp.json") as f:
+            new = f.read()
+        with open("tests/integration/test_files/attachment_tests/log.json") as f:
+            old = f.read()
+        self.assertEqual(new, old)
+        new_files = os.listdir("tests/integration/test_files/attachments")
+        old_files = os.listdir(
+         "tests/integration/test_files/attachment_tests/attachments"
+        )
+        self.assertListsEqual(new_files, old_files)
+        for nf in new_files:
+            with open("tests/integration/test_files/attachment_tests/attachments/" + nf, "rb") as f:
+                old = f.read()
+            with open("tests/integration/test_files/attachments/" + nf, "rb") as f:
+                new = f.read()
+            self.assertEqual(new, old)

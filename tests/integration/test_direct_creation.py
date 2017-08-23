@@ -48,6 +48,14 @@ class Tests(TestCase):
         conversation3.add_message(pychats.Message(
          "lol" * 69, datetime(2009, 5, 23, 19, 48, 2), mildred
         ))
+        picture_message = pychats.Message(
+         "Check out these!" * 69, datetime(2009, 5, 23, 21, 2, 2), mildred
+        )
+        attachment1 = pychats.Attachment(b"\x01\x02\x03\x04", "snap1.png")
+        attachment1 = pychats.Attachment(b"\xA1\xA2\xA3\xA4", "snap2.png")
+        picture_message.add_attachment(attachment1)
+        picture_message.add_attachment(attachment2)
+        conversation3.add_message(picture_message)
 
         chatlog = pychats.ChatLog("Test chatlog")
         chatlog.add_conversation(conversation1)
@@ -79,3 +87,13 @@ class Tests(TestCase):
         last_message = conversation1.messages()[-1]
         last_message.timestamp(datetime(1990, 1, 1, 12, 30, 12))
         self.assertEqual(conversation1.messages()[0], last_message)
+
+        picture_message = conversation3.messages()[-1]
+        self.assertEqual(len(picture_message.attachments()), 2)
+        self.assertEqual(
+         picture_message.attachments()[0].filename(), "snap1.png"
+        )
+        self.assertEqual(picture_message.attachments()[0].extension(), "png")
+        self.assertEqual(
+         picture_message.attachments()[0].contents(), b"\x01\x02\x03\x04"
+        )
