@@ -6,7 +6,7 @@ import pychats
 class Tests(TestCase):
 
     def test_load_facebook_messages(self):
-        log = pychats.from_facebook("itests/test_files/messages.htm")
+        log = pychats.from_facebook("tests/integration/test_files/messages.htm")
 
         self.assertEqual(log.name(), "Facebook")
         convs = sorted(log.conversations(), key=lambda k: len(k.messages()))

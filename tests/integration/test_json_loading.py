@@ -6,12 +6,12 @@ import pychats
 class Tests(TestCase):
 
     def tearDown(self):
-        if os.path.exists("itests/test_files/temp.json"):
-            os.remove("itests/test_files/temp.json")
+        if os.path.exists("tests/integration/test_files/temp.json"):
+            os.remove("tests/integration/test_files/temp.json")
 
 
     def test_load_and_save(self):
-        log = pychats.from_json("itests/test_files/log.json")
+        log = pychats.from_json("tests/integration/test_files/log.json")
 
         self.assertEqual(log.name(), "Intercepted communications")
         convs = sorted(log.conversations(), key=lambda k: len(k.messages()))
@@ -52,9 +52,9 @@ class Tests(TestCase):
         john = [p for p in people if p.name() == "John Flonn"][0]
         self.assertEqual(john.tags(), set(["male", "soldier"]))
 
-        log.save("itests/test_files/temp.json")
-        with open("itests/test_files/temp.json") as f:
+        log.save("tests/integration/test_files/temp.json")
+        with open("tests/integration/test_files/temp.json") as f:
             new = f.read()
-        with open("itests/test_files/log.json") as f:
+        with open("tests/integration/test_files/log.json") as f:
             old = f.read()
         self.assertEqual(new, old)
