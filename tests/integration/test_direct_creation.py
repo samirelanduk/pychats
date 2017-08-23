@@ -97,3 +97,58 @@ class Tests(TestCase):
         self.assertEqual(
          picture_message.attachments()[0].contents(), b"\x01\x02\x03\x04"
         )
+
+
+    def test_can_merge_conversations(self):
+        shae = pychats.Contact("Shae")
+        emma = pychats.Contact("Emma")
+        drake = pychats.Contact("Drake")
+
+        conversation1 = pychats.Conversation()
+        conversation2 = pychats.Conversation()
+        conversation3 = pychats.Conversation()
+        conversation4 = pychats.Conversation()
+
+        conversation1.add_message(pychats.Message(
+         "Hello all!", datetime(2009, 6, 23, 12, 0, 0), drake
+        ))
+        conversation1.add_message(pychats.Message(
+         "Hi", datetime(2009, 6, 23, 12, 1, 3), shae
+        ))
+        conversation1.add_message(pychats.Message(
+         "Hello :)", datetime(2009, 6, 23, 12, 1, 12), emma
+        ))
+
+        conversation2.add_message(pychats.Message(
+         "Hello :)", datetime(2009, 6, 23, 12, 1, 12), emma
+        ))
+        conversation2.add_message(pychats.Message(
+         "Is there an update?", datetime(2009, 6, 23, 13, 1, 12), drake
+        ))
+
+        conversation3.add_message(pychats.Message(
+         "what's up?", datetime(2009, 6, 23, 13, 1, 12), shae
+        ))
+        conversation3.add_message(pychats.Message(
+         "Not yet!", datetime(2009, 6, 23, 13, 1, 48), emma
+        ))
+
+        conversation4.add_message(pychats.Message(
+         "Hi", datetime(2009, 6, 12, 12, 0, 0), emma
+        ))
+        conversation4.add_message(pychats.Message(
+         "Hello all!", datetime(2009, 6, 23, 12, 0, 0), drake
+        ))
+
+        merged = pychats.Conversation.merge(
+         conversation1, conversation2, conversation3, conversation4
+        )
+
+        self.assertEqual(len(merged.messages()), 7)
+        self.assertEqual(merged.messages()[0].text(), "Hi")
+        self.assertEqual(merged.messages()[1].text(), "Hello all!")
+        self.assertEqual(merged.messages()[2].text(), "Hi")
+        self.assertEqual(merged.messages()[3].text(), "Hello :)")
+        self.assertEqual(merged.messages()[4].text(), "Is there an update?")
+        self.assertEqual(merged.messages()[5].text(), "what's up?")
+        self.assertEqual(merged.messages()[6].text(), "Not yet!")
