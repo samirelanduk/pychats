@@ -1,6 +1,6 @@
 from datetime import datetime
 from unittest import TestCase
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 from pychats.chats.conversations import Conversation, _sort_messages
 from pychats.chats.people import Contact
 from pychats.chats.messages import Message
@@ -54,6 +54,45 @@ class ConversationFromJsonTests(TestCase):
     def test_json_to_message_requires_messages_key(self):
         with self.assertRaises(ValueError):
             Conversation.from_json({"wrong": []})
+
+
+
+class ConversationMergingTests(TestCase):
+
+    @patch("pychats.chats.conversations._sort_messages")
+    def test_can_merge_conversations(self, mock_sort):
+        conv1 = Mock(Conversation)
+        conv2 = Mock(Conversation)
+        conv3 = Mock(Conversation)
+        message1, message2, message3 = [Mock(), Mock(), Mock()]
+        message4, message5, message6 = [Mock(), Mock(), Mock()]
+        message7, message8, message9 = [Mock(), Mock(), Mock()]
+        conv1.messages.return_value = [message1, message2, message3]
+        conv2.messages.return_value = [message4, message5, message6]
+        conv3.messages.return_value = [message7, message8, message9]
+        message3.__eq__ = MagicMock()
+        message4.__eq__ = MagicMock()
+        message6.__eq__ = MagicMock()
+        message7.__eq__ = MagicMock()
+        message3.__eq__.side_effect = lambda o: o is message4
+        message4.__eq__.side_effect = lambda o: o is message3
+        message6.__eq__.side_effect = lambda o: o is message7
+        message7.__eq__.side_effect = lambda o: o is message6
+        mock_sort.return_value = "sorted messages"
+        conv4 = Conversation.merge(conv1, conv2, conv3)
+        mock_sort.assert_called_with([
+         message1, message2, message3, message5, message6, message8, message9
+        ])
+        self.assertEqual(conv4._messages, "sorted messages")
+
+
+    def test_conversation_merging_requires_conversations(self):
+        conv1 = Mock(Conversation)
+        conv2 = Mock(Message)
+        conv3 = Mock(Conversation)
+        conv1.messages.return_value, conv3.messages.return_value = [], []
+        with self.assertRaises(TypeError):
+            Conversation.merge(conv1, conv2, conv3)
 
 
 

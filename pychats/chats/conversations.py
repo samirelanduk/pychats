@@ -36,6 +36,31 @@ class Conversation:
         return conversation
 
 
+    @staticmethod
+    def merge(*conversations):
+        """A static method which takes zero or more Conversation objects and
+        creates a single Conversation from them, with all of their messages.
+        If a message exists in more than one of the input conversations, it will
+        only appear in the returned conversation once.
+
+        :param \*conversations: The Conversations to merge.
+        :raises TypeError: if a non-Conversation is given.
+        :rtype: ``Conversation``"""
+
+        conversation = Conversation()
+        for conv in conversations:
+            if not isinstance(conv, Conversation):
+                raise TypeError("{} is not a Conversation".format(conv))
+            for message in conv.messages():
+                for m in conversation._messages:
+                    if m == message:
+                        break
+                else:
+                    conversation._messages.append(message)
+        conversation._messages = _sort_messages(conversation._messages)
+        return conversation
+
+
     def __repr__(self):
         return "<Conversation (%i message%s)>" % (
          len(self._messages), "" if len(self._messages) == 1 else "s"
