@@ -169,3 +169,21 @@ class Message:
          "timestamp": self._timestamp.strftime("%Y-%m-%d %H:%M:%S"),
          "sender": self._sender.to_json()
         }
+
+
+
+class Attachment:
+    """A file attached to a message.
+
+    :param bytes contents: The contents of the file.
+    :param str filename: The name of the file.
+    :raises TypeError: if contents is not ``bytes``.
+    :raises TypeError: if filename is not ``str``."""
+
+    def __init__(self, contents, filename):
+        if not isinstance(contents, bytes):
+            raise TypeError("{} is not bytes object".format(contents))
+        if not isinstance(filename, str):
+            raise TypeError("{} is not str".format(filename))
+        self._contents = contents
+        self._filename = filename
