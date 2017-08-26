@@ -189,8 +189,7 @@ class ConversationMessageRemovalTests(ConversationTest):
 
     def test_can_remove_messages(self):
         conversation = Conversation()
-        for message in self.messages:
-            conversation.add_message(message)
+        conversation._messages = list(self.messages)
         conversation.remove_message(self.messages[-1])
         self.assertEqual(conversation._messages, self.messages[:-1])
         conversation.remove_message(self.messages[0])
@@ -204,7 +203,8 @@ class ConversationMessageRemovalTests(ConversationTest):
 
     def test_removing_messages_resets_message_conversation_to_none(self):
         conversation = Conversation()
-        conversation.add_message(self.messages[0])
+        conversation._messages = [self.messages[0]]
+        conversation._messages[0]._conversation = conversation
         self.assertIs(self.messages[0]._conversation, conversation)
         conversation.remove_message(self.messages[0])
         self.assertIs(self.messages[0]._conversation, None)

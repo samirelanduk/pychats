@@ -82,7 +82,8 @@ class Conversation:
         regardless of the order in which you add messages, they will be stored
         in order of the messages' timestamps.
 
-        :param Message message: the ``Message`` to remove.
+        :param Message message: the ``Message`` to add.
+        :raises TypeError: if a non-message is given.
         :raises ValueError: if a message is given that is already there."""
 
         if not isinstance(message, Message):

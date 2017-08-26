@@ -146,8 +146,34 @@ class Message:
         message:
 
         :returns: ``tuple`` of ``Attachment``"""
-        
+
         return tuple(self._attachments)
+
+
+    def add_attachment(self, attachment):
+        """Adds a :py:class:`.Attachment` to the message.
+
+        You cannot add an attachment if it is already in the message.
+
+        :param Attachment attachment: the ``Attachment`` to add.
+        :raises TypeError: if  a non-Attachment is given.
+        :raises ValueError: if an attachment is given that is already there."""
+
+        if not isinstance(attachment, Attachment):
+            raise TypeError("{} is not an Attachment".format(attachment))
+        if attachment in self._attachments:
+            raise ValueError(
+             "{} is already an attachment of {}".format(attachment, self)
+            )
+        self._attachments.append(attachment)
+
+
+    def remove_attachment(self, attachment):
+        """Removes a :py:class:`.Attachment` from the message.
+
+        :param Attachment attachment: the ``Attachment`` to remove."""
+        
+        self._attachments.remove(attachment)
 
 
     def conversation(self):

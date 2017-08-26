@@ -52,7 +52,7 @@ class Tests(TestCase):
          "Check out these!" * 69, datetime(2009, 5, 23, 21, 2, 2), mildred
         )
         attachment1 = pychats.Attachment(b"\x01\x02\x03\x04", "snap1.png")
-        attachment1 = pychats.Attachment(b"\xA1\xA2\xA3\xA4", "snap2.png")
+        attachment2 = pychats.Attachment(b"\xA1\xA2\xA3\xA4", "snap2.png")
         picture_message.add_attachment(attachment1)
         picture_message.add_attachment(attachment2)
         conversation3.add_message(picture_message)

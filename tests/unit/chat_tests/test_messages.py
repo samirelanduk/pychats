@@ -2,7 +2,7 @@ from datetime import datetime
 from unittest import TestCase
 from unittest.mock import Mock, patch
 from pychats.chats.people import Contact
-from pychats.chats.messages import Message
+from pychats.chats.messages import Message, Attachment
 from pychats.chats.conversations import Conversation
 
 class MessageTest(TestCase):
@@ -267,6 +267,55 @@ class MessageAttachmentsTests(MessageTest):
         )
         message._attachments = ["a1", "a2", "a3"]
         self.assertEqual(message.attachments(), ("a1", "a2", "a3"))
+
+
+
+class MessageAttachmentAdditionTests(MessageTest):
+
+    def test_can_add_attachments_to_message(self):
+        a1, a2, a3 = Mock(Attachment), Mock(Attachment), Mock(Attachment)
+        message = Message(
+         "memento mori", datetime(2011, 3, 1, 12, 34, 32), self.contact1
+        )
+        message.add_attachment(a1)
+        self.assertEqual(message._attachments, [a1])
+        message.add_attachment(a2)
+        self.assertEqual(message._attachments, [a1, a2])
+        message.add_attachment(a3)
+        self.assertEqual(message._attachments, [a1, a2, a3])
+
+
+    def test_can_only_add_attachmentss_to_message(self):
+        message = Message(
+         "memento mori", datetime(2011, 3, 1, 12, 34, 32), self.contact1
+        )
+        with self.assertRaises(TypeError):
+            message.add_attachment("Some attachment")
+
+
+    def test_cannot_add_attachment_if_it_is_already_present(self):
+        message = Message(
+         "memento mori", datetime(2011, 3, 1, 12, 34, 32), self.contact1
+        )
+        attachment = Mock(Attachment)
+        message.add_attachment(attachment)
+        with self.assertRaises(ValueError):
+            message.add_attachment(attachment)
+
+
+
+class MessageAttachmentRemovalTests(MessageTest):
+
+    def test_can_remove_attachments(self):
+        a1, a2, a3 = Mock(Attachment), Mock(Attachment), Mock(Attachment)
+        message = Message(
+         "memento mori", datetime(2011, 3, 1, 12, 34, 32), self.contact1
+        )
+        message._attachments = [a1, a2, a3]
+        message.remove_attachment(a3)
+        self.assertEqual(message._attachments, [a1, a2])
+        message.remove_attachment(a1)
+        self.assertEqual(message._attachments, [a2])
 
 
 
