@@ -187,3 +187,9 @@ class Attachment:
             raise TypeError("{} is not str".format(filename))
         self._contents = contents
         self._filename = filename
+
+
+    def __repr__(self):
+        return "<Attachment '{}' ({} bytes)>".format(
+         self._filename, len(self._contents)
+        )
