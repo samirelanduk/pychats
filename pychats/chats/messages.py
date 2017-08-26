@@ -21,6 +21,7 @@ class Message:
         self._timestamp = timestamp
         self._sender = sender
         self._conversation = None
+        self._attachments = []
 
 
     @staticmethod
@@ -138,6 +139,15 @@ class Message:
             self._sender = sender
         else:
             return self._sender
+
+
+    def attachments(self):
+        """Returns the :py:class:`.Attachment` objects associated with the
+        message:
+
+        :returns: ``tuple`` of ``Attachment``"""
+        
+        return tuple(self._attachments)
 
 
     def conversation(self):

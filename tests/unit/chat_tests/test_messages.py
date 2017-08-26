@@ -25,6 +25,7 @@ class MessageCreationTests(MessageTest):
         self.assertEqual(message._timestamp, datetime(2011, 3, 1, 12, 34, 32))
         self.assertEqual(message._sender, self.contact1)
         self.assertEqual(message._conversation, None)
+        self.assertEqual(message._attachments, [])
 
 
     def test_text_must_be_str(self):
@@ -255,6 +256,17 @@ class MessageSenderTests(MessageTest):
         )
         with self.assertRaises(TypeError):
             message.sender(1000)
+
+
+
+class MessageAttachmentsTests(MessageTest):
+
+    def test_can_get_attachments(self):
+        message = Message(
+         "memento mori", datetime(2011, 3, 1, 12, 34, 32), self.contact1
+        )
+        message._attachments = ["a1", "a2", "a3"]
+        self.assertEqual(message.attachments(), ("a1", "a2", "a3"))
 
 
 
