@@ -172,7 +172,7 @@ class Message:
         """Removes a :py:class:`.Attachment` from the message.
 
         :param Attachment attachment: the ``Attachment`` to remove."""
-        
+
         self._attachments.remove(attachment)
 
 
@@ -268,3 +268,22 @@ class Attachment:
             self._filename = filename
         else:
             return self._filename
+
+
+    def extension(self, ext=None):
+        """Returns the file extension of the attachment, derived from the
+        filename. If a string is provided, the extension will be updated to that.
+
+        :param str ext: If given, the attachment's extension will be updated.
+        :raises TypeError: if the extension given is not a ``str``.
+        :rtype: ``str``"""
+
+        if ext:
+            if not isinstance(ext, str):
+                raise TypeError("{} is not str".format(ext))
+            if "." in self._filename:
+                self._filename = ".".join(self._filename.split(".")[:-1] + [ext])
+            else:
+                self._filename += ".{}".format(ext)
+            return
+        return self._filename.split(".")[-1] if "." in self._filename else ""

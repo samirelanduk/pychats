@@ -28,7 +28,7 @@ class AttachmentReprTests(TestCase):
 
 
 
-class AttachmentContentsProperty(TestCase):
+class AttachmentContentsPropertyTests(TestCase):
 
     def test_attachment_contents(self):
         att = Attachment(b"\x01\x02\x03\x04", "snap1.png")
@@ -48,7 +48,7 @@ class AttachmentContentsProperty(TestCase):
 
 
 
-class AttachmentFilenameProperty(TestCase):
+class AttachmentFilenamePropertyTests(TestCase):
 
     def test_attachment_filename(self):
         att = Attachment(b"\x01\x02\x03\x04", "snap1.png")
@@ -65,3 +65,34 @@ class AttachmentFilenameProperty(TestCase):
         att = Attachment(b"\x01\x02\x03\x04", "snap1.png")
         with self.assertRaises(TypeError):
             att.filename(b"1000")
+
+
+
+class AttachmentExtensionTests(TestCase):
+
+    def test_can_get_extension(self):
+        att = Attachment(b"\x01\x02\x03\x04", "snap.1.png")
+        self.assertEqual(att.extension(), "png")
+
+
+    def test_can_get_no_extension(self):
+        att = Attachment(b"\x01\x02\x03\x04", "snap")
+        self.assertEqual(att.extension(), "")
+
+
+    def test_can_update_extension(self):
+        att = Attachment(b"\x01\x02\x03\x04", "snap.1.png")
+        att.extension("gif")
+        self.assertEqual(att._filename, "snap.1.gif")
+
+
+    def test_can_add_extentsion(self):
+        att = Attachment(b"\x01\x02\x03\x04", "snap")
+        att.extension("gif")
+        self.assertEqual(att._filename, "snap.gif")
+
+
+    def test_attachment_must_be_str(self):
+        att = Attachment(b"\x01\x02\x03\x04", "snap")
+        with self.assertRaises(TypeError):
+            att.extension(b"1000")
