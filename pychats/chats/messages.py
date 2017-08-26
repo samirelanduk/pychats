@@ -86,7 +86,9 @@ class Message:
         """Returns the text of the message. If a string is provided, the text
         will be updated to that.
 
-        :param str text: If given, the message's text will be updated."""
+        :param str text: If given, the message's text will be updated.
+        :raises TypeError: if the text given is not ``str``.
+        :rtype: ``str``"""
 
         if text:
             if not isinstance(text, str):
@@ -101,7 +103,9 @@ class Message:
         timestamp will be updated to that.
 
         :param datetime timestamp: If given, the message's timestamp will be\
-        updated."""
+        updated.
+        :raises TypeError: if the timestamp given is not ``datetime``.
+        :rtype: ``datetime``"""
 
         if timestamp:
             if not isinstance(timestamp, datetime):
@@ -122,7 +126,9 @@ class Message:
         """Returns the person who sent the message. If a :py:class:`.Contact`
         is provided, the sender will be updated to that.
 
-        :param Contact sender: If given, the message's sender will be updated."""
+        :param Contact sender: If given, the message's sender will be updated.
+        :raises TypeError: if the sender given is not :py:class:`.Contact`.
+        :rtype: ``Contact``"""
 
         if sender:
             if not isinstance(sender, Contact):
@@ -193,3 +199,36 @@ class Attachment:
         return "<Attachment '{}' ({} bytes)>".format(
          self._filename, len(self._contents)
         )
+
+
+    def contents(self, contents=None):
+        """Returns the contents of the attachment. If a bytestring is provided,
+        the contents will be updated to that.
+
+        :param bytes contents: If given, the attachment's contents will be\
+        updated.
+        :raises TypeError: if the contents given is not ``bytes``.
+        :rtype: ``bytes``"""
+
+        if contents:
+            if not isinstance(contents, bytes):
+                raise TypeError("{} is not bytes object".format(contents))
+            self._contents = contents
+        else:
+            return self._contents
+
+
+    def filename(self, filename=None):
+        """Returns the filename of the attachment. If a string is provided, the
+        filename will be updated to that.
+
+        :param str text: If given, the attachment's filename will be updated.
+        :raises TypeError: if the filename given is not a ``str``.
+        :rtype: ``str``"""
+
+        if filename:
+            if not isinstance(filename, str):
+                raise TypeError("{} is not str".format(filename))
+            self._filename = filename
+        else:
+            return self._filename

@@ -25,3 +25,43 @@ class AttachmentReprTests(TestCase):
     def test_attachment_repr(self):
         att = Attachment(b"\x01\x02\x03\x04", "snap1.png")
         self.assertEqual(str(att), "<Attachment 'snap1.png' (4 bytes)>")
+
+
+
+class AttachmentContentsProperty(TestCase):
+
+    def test_attachment_contents(self):
+        att = Attachment(b"\x01\x02\x03\x04", "snap1.png")
+        self.assertIs(att._contents, att.contents())
+
+
+    def test_can_update_attachment_contents(self):
+        att = Attachment(b"\x01\x02\x03\x04", "snap1.png")
+        att.contents(b"Non semper erit aestas")
+        self.assertEqual(att._contents, b"Non semper erit aestas")
+
+
+    def test_new_contents_must_be_bytes(self):
+        att = Attachment(b"\x01\x02\x03\x04", "snap1.png")
+        with self.assertRaises(TypeError):
+            att.contents("1000")
+
+
+
+class AttachmentFilenameProperty(TestCase):
+
+    def test_attachment_filename(self):
+        att = Attachment(b"\x01\x02\x03\x04", "snap1.png")
+        self.assertIs(att._filename, att.filename())
+
+
+    def test_can_update_attachment_filename(self):
+        att = Attachment(b"\x01\x02\x03\x04", "snap1.png")
+        att.filename("snap2.gif")
+        self.assertEqual(att._filename, "snap2.gif")
+
+
+    def test_new_filename_must_be_str(self):
+        att = Attachment(b"\x01\x02\x03\x04", "snap1.png")
+        with self.assertRaises(TypeError):
+            att.filename(b"1000")
