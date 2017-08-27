@@ -1,6 +1,7 @@
 """This module contains the Chatlog class."""
 
 import json
+import os
 from .conversations import Conversation
 
 class ChatLog:
@@ -127,8 +128,14 @@ class ChatLog:
 
         :param str path: The file to save it to."""
 
+        attachments = os.path.sep.join(
+         path.split(os.path.sep)[:-1]
+        ) + os.path.sep + "attachments"
+        try:
+            os.mkdir(attachments)
+        except OSError: pass
         with open(path, "w") as f:
-            json.dump(self.to_json(), f)
+            json.dump(self.to_json(attachment_path=attachments), f)
 
 
 

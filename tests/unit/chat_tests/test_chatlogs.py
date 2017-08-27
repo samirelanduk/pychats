@@ -223,7 +223,8 @@ class JsonFileSavingTests(ChatlogTest):
     @patch("pychats.chats.chatlogs.ChatLog.to_json")
     @patch("json.dump")
     @patch("builtins.open")
-    def test_loading_from_json_file(self, mock_open, mock_dump, mock_json):
+    @patch("os.mkdir")
+    def test_loading_from_json_file(self, mock_mk, mock_open, mock_dump, mock_json):
         open_return = MagicMock()
         mock_file = Mock()
         mock_write = MagicMock()
@@ -235,3 +236,5 @@ class JsonFileSavingTests(ChatlogTest):
         log.save("path/to/file")
         mock_open.assert_called_once_with("path/to/file", "w")
         mock_dump.assert_called_with({"a": [{}]}, mock_file)
+        mock_mk.assert_called_with("path/to/attachments")
+        mock_json.assert_called_with(attachment_path="path/to/attachments")
