@@ -295,3 +295,15 @@ class Attachment:
                 self._filename += ".{}".format(ext)
             return
         return self._filename.split(".")[-1] if "." in self._filename else ""
+
+
+    def save(self, path):
+        """Saves the Attachment as a file in the location given.
+
+        :param str path: The path to the directory to save in.
+        :raises TypeError: if a non-string path is given."""
+
+        if not isinstance(path, str):
+            raise TypeError("path {} is not a str")
+        with open(path + self._filename, "wb") as f:
+            f.write(self._contents)

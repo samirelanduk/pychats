@@ -1,4 +1,5 @@
 from unittest import TestCase
+from unittest.mock import patch, Mock, MagicMock
 from pychats.chats.messages import Attachment
 
 class AttachmentCreationTests(TestCase):
@@ -96,3 +97,26 @@ class AttachmentExtensionTests(TestCase):
         att = Attachment(b"\x01\x02\x03\x04", "snap")
         with self.assertRaises(TypeError):
             att.extension(b"1000")
+
+
+
+class AttachmentSavingTests(TestCase):
+
+    @patch("builtins.open")
+    def test_can_save(self, mock_open):
+        open_return = MagicMock()
+        mock_file = Mock()
+        mock_write = MagicMock()
+        mock_file.write = mock_write
+        open_return.__enter__.return_value = mock_file
+        mock_open.return_value = open_return
+        att = Attachment(b"\x01\x02\x03\x04", "snap.png")
+        att.save("/path/to/attachments/")
+        mock_open.assert_called_once_with("/path/to/attachments/snap.png", "wb")
+        mock_write.assert_called_once_with(b"\x01\x02\x03\x04")
+
+
+    def test_saving_needs_str(self):
+        att = Attachment(b"\x01\x02\x03\x04", "snap.png")
+        with self.assertRaises(TypeError):
+            att.save(100)
