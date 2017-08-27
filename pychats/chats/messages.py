@@ -201,17 +201,24 @@ class Message:
             return set()
 
 
-    def to_json(self):
+    def to_json(self, attachment_path=None):
         """Converts the Message to a JSON dict.
 
+        :param str attachment_path: If given, any attachments associated with\
+        the messages will be saved to this location.
         :rtype: ``dict``"""
 
-        return {
+        message = {
          "text": self._text,
          "timestamp": self._timestamp.strftime("%Y-%m-%d %H:%M:%S"),
          "sender": self._sender.to_json(),
-         "attachments": [a.filename() for a in self._attachments]
+         "attachments": []
         }
+        if attachment_path:
+            message["attachments"] = [a.filename() for a in self._attachments]
+            for att in self._attachments:
+                att.save(attachment_path)
+        return message
 
 
 

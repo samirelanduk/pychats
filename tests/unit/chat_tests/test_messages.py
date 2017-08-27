@@ -359,8 +359,22 @@ class MessageToJsonTests(TestCase):
 
     def test_can_make_json_from_message(self):
         contact = Mock(Contact)
-        contact.name.return_value = "Justin Powers"
-        contact.tags.return_value = set(["aaa"])
+        message = Message(
+         "message text", datetime(2009, 5, 23, 12, 12, 1), contact
+        )
+        contact.to_json.return_value = {"name": "J", "tags": ["aaa"]}
+        json = message.to_json()
+        contact.to_json.assert_called()
+        self.assertEqual(json, {
+         "text": "message text",
+         "timestamp": "2009-05-23 12:12:01",
+         "sender": {"name": "J", "tags": ["aaa"]},
+         "attachments": []
+        })
+
+
+    def test_can_make_json_from_message_with_attachments(self):
+        contact = Mock(Contact)
         att1, att2 = Mock(), Mock()
         att1.filename.return_value = "file1.png"
         att2.filename.return_value = "file2.png"
@@ -369,11 +383,12 @@ class MessageToJsonTests(TestCase):
         )
         message._attachments = [att1, att2]
         contact.to_json.return_value = {"name": "J", "tags": ["aaa"]}
-        json = message.to_json()
-        contact.to_json.assert_called()
+        json = message.to_json(attachment_path="/path/")
         self.assertEqual(json, {
          "text": "message text",
          "timestamp": "2009-05-23 12:12:01",
          "sender": {"name": "J", "tags": ["aaa"]},
          "attachments": ["file1.png", "file2.png"]
         })
+        att1.save.assert_called_with("/path/")
+        att2.save.assert_called_with("/path/")
