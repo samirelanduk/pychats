@@ -209,7 +209,8 @@ class Message:
         return {
          "text": self._text,
          "timestamp": self._timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-         "sender": self._sender.to_json()
+         "sender": self._sender.to_json(),
+         "attachments": [a.filename() for a in self._attachments]
         }
 
 

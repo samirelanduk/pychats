@@ -361,14 +361,19 @@ class MessageToJsonTests(TestCase):
         contact = Mock(Contact)
         contact.name.return_value = "Justin Powers"
         contact.tags.return_value = set(["aaa"])
+        att1, att2 = Mock(), Mock()
+        att1.filename.return_value = "file1.png"
+        att2.filename.return_value = "file2.png"
         message = Message(
          "message text", datetime(2009, 5, 23, 12, 12, 1), contact
         )
+        message._attachments = [att1, att2]
         contact.to_json.return_value = {"name": "J", "tags": ["aaa"]}
         json = message.to_json()
         contact.to_json.assert_called()
         self.assertEqual(json, {
          "text": "message text",
          "timestamp": "2009-05-23 12:12:01",
-         "sender": {"name": "J", "tags": ["aaa"]}
+         "sender": {"name": "J", "tags": ["aaa"]},
+         "attachments": ["file1.png", "file2.png"]
         })
