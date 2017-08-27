@@ -98,11 +98,22 @@ class ChatLog:
         self._conversations.remove(conversation)
 
 
-    def to_json(self):
+    def to_json(self, attachment_path=None):
         """Converts the ChatLog to a JSON dict.
 
+        :param str attachment_path: If given, any attachments associated with\
+        the messages will be saved to this location.
         :rtype: ``dict``"""
 
+        if attachment_path:
+            return {
+             "name": self._name,
+             "conversations": [
+              conv.to_json(attachment_path=attachment_path) for conv in sorted(
+               self._conversations, key=lambda k: k.length(), reverse=True
+              )
+             ]
+            }
         return {
          "name": self._name,
          "conversations": [conv.to_json() for conv in sorted(
@@ -115,7 +126,7 @@ class ChatLog:
         """Saves the ChatLog to a JSON file.
 
         :param str path: The file to save it to."""
-        
+
         with open(path, "w") as f:
             json.dump(self.to_json(), f)
 

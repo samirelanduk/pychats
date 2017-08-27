@@ -139,11 +139,17 @@ class Conversation:
         return participants
 
 
-    def to_json(self):
+    def to_json(self, attachment_path=None):
         """Converts the Conversation to a JSON dict.
 
+        :param str attachment_path: If given, any attachments associated with\
+        the messages will be saved to this location.
         :rtype: ``dict``"""
 
+        if attachment_path:
+            return {"messages": [message.to_json(
+             attachment_path=attachment_path
+            ) for message in self._messages]}
         return {"messages": [message.to_json() for message in self._messages]}
 
 

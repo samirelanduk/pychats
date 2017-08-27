@@ -178,6 +178,22 @@ class ChatLogToJsonTests(ChatlogTest):
         self.assertEqual(log.to_json(), {
          "name": "test log", "conversations": [{"cc": "dd"}, {"aa": "bb"}]
         })
+        self.conversation1.to_json.assert_called_with()
+        self.conversation2.to_json.assert_called_with()
+
+
+    def test_can_get_json_from_chatlog_with_attachments(self):
+        self.conversation1.to_json.return_value = {"aa": "bb"}
+        self.conversation2.to_json.return_value = {"cc": "dd"}
+        self.conversation1.length.return_value = 100
+        self.conversation2.length.return_value = 101
+        log = ChatLog("test log")
+        log._conversations = set([self.conversation1, self.conversation2])
+        self.assertEqual(log.to_json(attachment_path="path"), {
+         "name": "test log", "conversations": [{"cc": "dd"}, {"aa": "bb"}]
+        })
+        self.conversation1.to_json.assert_called_with(attachment_path="path")
+        self.conversation2.to_json.assert_called_with(attachment_path="path")
 
 
 

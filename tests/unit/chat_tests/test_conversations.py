@@ -281,3 +281,18 @@ class ConversationToJsonTests(ConversationTest):
         self.assertEqual(
          conversation.to_json(), {"messages": [{"aa": "bb"}, {"cc": "dd"}]}
         )
+        self.messages[0].to_json.assert_called_with()
+        self.messages[1].to_json.assert_called_with()
+
+
+    def test_can_get_json_from_conversation_with_attachemts(self):
+        self.messages[0].to_json.return_value = {"aa": "bb"}
+        self.messages[1].to_json.return_value = {"cc": "dd"}
+        conversation = Conversation()
+        conversation._messages = self.messages[:2]
+        self.assertEqual(
+         conversation.to_json(attachment_path="path"),
+         {"messages": [{"aa": "bb"}, {"cc": "dd"}]}
+        )
+        self.messages[0].to_json.assert_called_with(attachment_path="path")
+        self.messages[1].to_json.assert_called_with(attachment_path="path")
