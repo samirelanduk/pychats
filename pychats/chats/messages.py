@@ -1,5 +1,6 @@
 """This module contains the basic Message class."""
 
+import os
 from .people import Contact
 from datetime import datetime
 
@@ -237,6 +238,19 @@ class Attachment:
             raise TypeError("{} is not str".format(filename))
         self._contents = contents
         self._filename = filename
+
+
+    @staticmethod
+    def load(path):
+        """An alternative constructor that creates an Attachment from a file.
+
+        :param str path: The path to the file.
+        :raises TypeError: if a non-string path is given."""
+
+        if not isinstance(path, str):
+            raise TypeError("path {} is not a str")
+        with open(path, "rb") as f:
+            return Attachment(f.read(), path.split(os.path.sep)[-1])
 
 
     def __repr__(self):

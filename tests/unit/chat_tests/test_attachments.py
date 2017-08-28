@@ -120,3 +120,24 @@ class AttachmentSavingTests(TestCase):
         att = Attachment(b"\x01\x02\x03\x04", "snap.png")
         with self.assertRaises(TypeError):
             att.save(100)
+
+
+
+class AttachmentLoadingTests(TestCase):
+
+    @patch("builtins.open")
+    def test_can_load(self, mock_open):
+        open_return = MagicMock()
+        mock_file = Mock()
+        open_return.__enter__.return_value = mock_file
+        mock_file.read.return_value = b"returnstring"
+        mock_open.return_value = open_return
+        att = Attachment.load("/path/to/attachments/file.png")
+        mock_open.assert_called_with("/path/to/attachments/file.png", "rb")
+        self.assertEqual(att._filename, "file.png")
+        self.assertEqual(att._contents, b"returnstring")
+
+
+    def test_loading_needs_str(self):
+        with self.assertRaises(TypeError):
+            Attachment.load(100)
