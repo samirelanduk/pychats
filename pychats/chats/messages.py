@@ -26,7 +26,7 @@ class Message:
 
 
     @staticmethod
-    def from_json(json):
+    def from_json(json, attachment_path=None):
         """An alternate constructor. It creates a py:class:`.Message` from a
         JSON ``dict``.
 
@@ -37,7 +37,8 @@ class Message:
         would be created for each message.
 
         :param dict json: The ``dict`` to convert.
-        :param contacts: An iterable of py:class:`.Contact` objects.
+        :param str attachment_path: if given, Attachments will be loaded from\
+        here.
         :raises TypeError: if something other than a ``dict`` is given.
         :raises ValueError: if the ``dict`` doesn't have a ``text`` key.
         :raises ValueError: if the ``dict`` doesn't have a ``timestamp`` key.
@@ -60,11 +61,16 @@ class Message:
                 break
         else:
             sender = Contact.from_json(json["sender"])
-        return Message(
+        message = Message(
          json["text"],
          datetime.strptime(json["timestamp"], "%Y-%m-%d %H:%M:%S"),
          sender
         )
+        if attachment_path:
+            message._attachments = [Attachment.load(
+             attachment_path + os.path.sep + f
+            ) for f in json["attachments"]]
+        return message
 
 
     def __repr__(self):

@@ -67,6 +67,7 @@ class MessageFromJsonTests(TestCase):
         self.assertEqual(message._text, "message text")
         self.assertEqual(message._timestamp, datetime(2009, 5, 23, 12, 12, 1))
         self.assertIs(message._sender, contact1)
+        self.assertEqual(message._attachments, [])
 
 
     @patch("pychats.chats.messages.Contact.from_json")
@@ -88,6 +89,28 @@ class MessageFromJsonTests(TestCase):
         self.assertEqual(message._text, "message text")
         self.assertEqual(message._timestamp, datetime(2009, 5, 23, 12, 12, 1))
         self.assertIs(message._sender, contact3)
+        self.assertEqual(message._attachments, [])
+
+
+    @patch("pychats.chats.messages.Attachment.load")
+    def test_can_make_message_with_attachments(self, mock_load):
+        contact1 = Mock(Contact)
+        contact1.name.return_value = "Justin Powers"
+        json = {
+         "text": "message text",
+         "timestamp": "2009-05-23 12:12:01",
+         "sender": {"name": "Justin Powers", "tags": ["tag1", "tag2"]},
+         "attachments": ["file1.png", "file2.png"]
+        }
+        Contact.all_contacts = set([contact1])
+        mock_load.side_effect = ["att1", "att2"]
+        message = Message.from_json(json, attachment_path="/path")
+        self.assertEqual(message._text, "message text")
+        self.assertEqual(message._timestamp, datetime(2009, 5, 23, 12, 12, 1))
+        self.assertIs(message._sender, contact1)
+        self.assertEqual(message._attachments, ["att1", "att2"])
+        mock_load.assert_any_call("/path/file1.png")
+        mock_load.assert_any_call("/path/file2.png")
 
 
     def test_json_to_message_requires_dict(self):
