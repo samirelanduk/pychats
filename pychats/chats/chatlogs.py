@@ -146,7 +146,16 @@ class ChatLog:
 def from_json(path):
     """Creates a JSON object from a JSON file at the specified path.
 
+    If there is a directory in the same directory called 'attachments' then
+    :py:class:`.Attachment` objects will be loaded from it.
+
     :path str path: The path to the JSON file."""
 
+
     with open(path) as f:
+        attachments = os.path.sep.join(
+         path.split(os.path.sep)[:-1]
+        ) + os.path.sep + "attachments"
+        if os.path.isdir(attachments):
+            return ChatLog.from_json(json.load(f), attachment_path=attachments)
         return ChatLog.from_json(json.load(f))

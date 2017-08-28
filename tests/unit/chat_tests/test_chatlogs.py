@@ -216,10 +216,12 @@ class ChatLogToJsonTests(ChatlogTest):
 
 class JsonFileLoadingTests(ChatlogTest):
 
+    @patch("os.path.isdir")
     @patch("pychats.chats.chatlogs.ChatLog.from_json")
     @patch("json.load")
     @patch("builtins.open")
-    def test_loading_from_json_file(self, mock_open, mock_load, mock_json):
+    def test_loading_from_json_file(self, mock_open, mock_load, mock_json, mock_is):
+        mock_is.return_value = False
         open_return = MagicMock()
         mock_file = Mock()
         open_return.__enter__.return_value = mock_file
@@ -231,6 +233,28 @@ class JsonFileLoadingTests(ChatlogTest):
         mock_open.assert_called_with("path/to/file")
         mock_load.assert_called_with(mock_file)
         mock_json.assert_called_with({"a": "b"})
+        mock_is.assert_called_with("path/to/attachments")
+        self.assertEqual(log, "log object")
+
+
+    @patch("os.path.isdir")
+    @patch("pychats.chats.chatlogs.ChatLog.from_json")
+    @patch("json.load")
+    @patch("builtins.open")
+    def test_loading_from_json_file_and_dir(self, mock_open, mock_load, mock_json, mock_is):
+        mock_is.return_value = True
+        open_return = MagicMock()
+        mock_file = Mock()
+        open_return.__enter__.return_value = mock_file
+        mock_file.read.return_value = '{"a": "b"}'
+        mock_open.return_value = open_return
+        mock_load.return_value = {"a": "b"}
+        mock_json.return_value = "log object"
+        log = from_json("path/to/file")
+        mock_open.assert_called_with("path/to/file")
+        mock_load.assert_called_with(mock_file)
+        mock_json.assert_called_with({"a": "b"}, attachment_path="path/to/attachments")
+        mock_is.assert_called_with("path/to/attachments")
         self.assertEqual(log, "log object")
 
 
