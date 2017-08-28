@@ -16,11 +16,13 @@ class Conversation:
 
 
     @staticmethod
-    def from_json(json):
+    def from_json(json, attachment_path=None):
         """An alternate constructor. It creates a py:class:`.Conversation` from
         a JSON ``dict``.
 
         :param dict json: The ``dict`` to convert.
+        :param str attachment_path: if given, Attachments will be loaded from\
+        here.
         :raises TypeError: if something other than a ``dict`` is given.
         :raises ValueError: if the ``dict`` doesn't have a ``messages`` key.
         :rtype: ``Conversation``"""
@@ -29,7 +31,9 @@ class Conversation:
             raise TypeError("'%s' is not a dict" % str(json))
         if "messages" not in json:
             raise ValueError("Conversation json needs 'messages' key: %s" % str(json))
-        messages = [Message.from_json(m) for m in json["messages"]]
+        messages = [Message.from_json(
+         m, attachment_path=attachment_path
+        ) for m in json["messages"]]
         messages = _sort_messages(messages)
         conversation = Conversation()
         conversation._messages = messages

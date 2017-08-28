@@ -38,9 +38,27 @@ class ConversationFromJsonTests(TestCase):
         }
         mock_sort.side_effect = lambda k: k
         conversation = Conversation.from_json(json)
-        mock_message.assert_any_call("message1")
-        mock_message.assert_any_call("message2")
-        mock_message.assert_any_call("message3")
+        mock_message.assert_any_call("message1", attachment_path=None)
+        mock_message.assert_any_call("message2", attachment_path=None)
+        mock_message.assert_any_call("message3", attachment_path=None)
+        self.assertIsInstance(conversation, Conversation)
+        self.assertEqual(conversation._messages, [message1, message2, message3])
+        mock_sort.assert_called_with([message1, message2, message3])
+
+
+    @patch("pychats.chats.conversations._sort_messages")
+    @patch("pychats.chats.conversations.Message.from_json")
+    def test_can_create_conversation_with_attachments(self, mock_message, mock_sort):
+        message1, message2, message3 = Mock(), Mock(), Mock()
+        mock_message.side_effect = [message1, message2, message3]
+        json = {
+         "messages": ["message1", "message2", "message3"]
+        }
+        mock_sort.side_effect = lambda k: k
+        conversation = Conversation.from_json(json, attachment_path="/path/")
+        mock_message.assert_any_call("message1", attachment_path="/path/")
+        mock_message.assert_any_call("message2", attachment_path="/path/")
+        mock_message.assert_any_call("message3", attachment_path="/path/")
         self.assertIsInstance(conversation, Conversation)
         self.assertEqual(conversation._messages, [message1, message2, message3])
         mock_sort.assert_called_with([message1, message2, message3])

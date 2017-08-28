@@ -37,9 +37,26 @@ class ChatlogFromJsonTests(ChatlogTest):
          "conversations": ["conv1", "conv2", "conv3"]
         }
         log = ChatLog.from_json(json)
-        mock_conversation.assert_any_call("conv1")
-        mock_conversation.assert_any_call("conv2")
-        mock_conversation.assert_any_call("conv3")
+        mock_conversation.assert_any_call("conv1", attachment_path=None)
+        mock_conversation.assert_any_call("conv2", attachment_path=None)
+        mock_conversation.assert_any_call("conv3", attachment_path=None)
+        self.assertIsInstance(log, ChatLog)
+        self.assertEqual(log._name, "Log Name")
+        self.assertEqual(log._conversations, [conv1, conv2, conv3])
+
+
+    @patch("pychats.chats.chatlogs.Conversation.from_json")
+    def test_can_create_conversation_with_sttachments(self, mock_conversation):
+        conv1, conv2, conv3 = Mock(), Mock(), Mock()
+        mock_conversation.side_effect = [conv1, conv2, conv3]
+        json = {
+         "name": "Log Name",
+         "conversations": ["conv1", "conv2", "conv3"]
+        }
+        log = ChatLog.from_json(json, attachment_path="/path/")
+        mock_conversation.assert_any_call("conv1", attachment_path="/path/")
+        mock_conversation.assert_any_call("conv2", attachment_path="/path/")
+        mock_conversation.assert_any_call("conv3", attachment_path="/path/")
         self.assertIsInstance(log, ChatLog)
         self.assertEqual(log._name, "Log Name")
         self.assertEqual(log._conversations, [conv1, conv2, conv3])

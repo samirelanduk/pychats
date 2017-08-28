@@ -17,11 +17,13 @@ class ChatLog:
 
 
     @staticmethod
-    def from_json(json):
+    def from_json(json, attachment_path=None):
         """An alternate constructor. It creates a py:class:`.ChatLog` from a
         JSON ``dict``.
 
         :param dict json: The ``dict`` to convert.
+        :param str attachment_path: if given, Attachments will be loaded from\
+        here.
         :raises TypeError: if something other than a ``dict`` is given.
         :raises ValueError: if the ``dict`` doesn't have a ``name`` key.
         :raises ValueError: if the ``dict`` doesn't have a ``conversations`` key.
@@ -33,7 +35,9 @@ class ChatLog:
             raise ValueError("ChatLog json needs 'name' key: %s" % str(json))
         if "conversations" not in json:
             raise ValueError("ChatLog json needs 'conversations' key: %s" % str(json))
-        conversations = [Conversation.from_json(c) for c in json["conversations"]]
+        conversations = [Conversation.from_json(
+         c, attachment_path=attachment_path
+        ) for c in json["conversations"]]
         log = ChatLog(json["name"])
         log._conversations = conversations
         return log
