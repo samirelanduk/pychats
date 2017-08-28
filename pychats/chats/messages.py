@@ -325,5 +325,5 @@ class Attachment:
 
         if not isinstance(path, str):
             raise TypeError("path {} is not a str")
-        with open(path + self._filename, "wb") as f:
+        with open(path + os.path.sep + self._filename, "wb") as f:
             f.write(self._contents)

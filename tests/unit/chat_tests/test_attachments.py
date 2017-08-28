@@ -111,7 +111,7 @@ class AttachmentSavingTests(TestCase):
         open_return.__enter__.return_value = mock_file
         mock_open.return_value = open_return
         att = Attachment(b"\x01\x02\x03\x04", "snap.png")
-        att.save("/path/to/attachments/")
+        att.save("/path/to/attachments")
         mock_open.assert_called_once_with("/path/to/attachments/snap.png", "wb")
         mock_write.assert_called_once_with(b"\x01\x02\x03\x04")
 

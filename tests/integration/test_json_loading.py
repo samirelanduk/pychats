@@ -10,10 +10,11 @@ class Tests(TestCase):
         if os.path.exists("tests/integration/test_files/temp.json"):
             os.remove("tests/integration/test_files/temp.json")
         if os.path.exists("tests/integration/test_files/attachments"):
-            shutil.remove("tests/integration/test_files/attachments")
+            shutil.rmtree("tests/integration/test_files/attachments")
 
 
     def test_load_and_save(self):
+        self.maxDiff = None
         log = pychats.from_json("tests/integration/test_files/log.json")
 
         self.assertEqual(log.name(), "Intercepted communications")
@@ -60,7 +61,7 @@ class Tests(TestCase):
             new = f.read()
         with open("tests/integration/test_files/log.json") as f:
             old = f.read()
-        self.assertEqual(new, old)
+        self.assertEqual(new.strip(), old.strip())
 
 
     def test_load_and_save_with_attachments(self):
@@ -77,19 +78,21 @@ class Tests(TestCase):
         attachments = message.attachments()
         self.assertEqual(len(attachments), 2)
         self.assertEqual(attachments[0].filename(), "cat1.jpg")
-        self.assertEqual(attachments[1].filename(), "cat2.jpg")
+        self.assertEqual(attachments[1].filename(), "cat2.png")
+        self.assertEqual(attachments[0].extension(), "jpg")
+        self.assertEqual(attachments[1].extension(), "png")
 
         log.save("tests/integration/test_files/temp.json")
         with open("tests/integration/test_files/temp.json") as f:
             new = f.read()
         with open("tests/integration/test_files/attachment_tests/log.json") as f:
             old = f.read()
-        self.assertEqual(new, old)
+        self.assertEqual(new.strip(), old.strip())
         new_files = os.listdir("tests/integration/test_files/attachments")
         old_files = os.listdir(
          "tests/integration/test_files/attachment_tests/attachments"
         )
-        self.assertListsEqual(new_files, old_files)
+        self.assertCountEqual(new_files, old_files)
         for nf in new_files:
             with open("tests/integration/test_files/attachment_tests/attachments/" + nf, "rb") as f:
                 old = f.read()
