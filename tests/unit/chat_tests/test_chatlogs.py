@@ -17,7 +17,7 @@ class ChatlogCreationTests(ChatlogTest):
     def test_can_create_chatlog(self):
         chatlog = ChatLog("Facebook")
         self.assertEqual(chatlog._name, "Facebook")
-        self.assertEqual(chatlog._conversations, set())
+        self.assertEqual(chatlog._conversations, [])
 
 
     def test_chatlog_name_must_be_str(self):
@@ -46,7 +46,7 @@ class ChatlogFromJsonTests(ChatlogTest):
 
 
     @patch("pychats.chats.chatlogs.Conversation.from_json")
-    def test_can_create_conversation_with_sttachments(self, mock_conversation):
+    def test_can_create_conversation_with_attachments(self, mock_conversation):
         conv1, conv2, conv3 = Mock(), Mock(), Mock()
         mock_conversation.side_effect = [conv1, conv2, conv3]
         json = {
@@ -87,16 +87,16 @@ class ChatlogReprTests(ChatlogTest):
 
     def test_chatlog_repr_one_conversation(self):
         chatlog = ChatLog("Facebook")
-        chatlog._conversations.add(Mock(Conversation))
+        chatlog._conversations.append(Mock(Conversation))
         self.assertEqual(str(chatlog), "<'Facebook' ChatLog (1 Conversation)>")
 
 
     def test_chatlog_repr_multiple_conversation(self):
         chatlog = ChatLog("Facebook")
-        chatlog._conversations.add(Mock(Conversation))
-        chatlog._conversations.add(Mock(Conversation))
+        chatlog._conversations.append(Mock(Conversation))
+        chatlog._conversations.append(Mock(Conversation))
         self.assertEqual(str(chatlog), "<'Facebook' ChatLog (2 Conversations)>")
-        chatlog._conversations.add(Mock(Conversation))
+        chatlog._conversations.append(Mock(Conversation))
         self.assertEqual(str(chatlog), "<'Facebook' ChatLog (3 Conversations)>")
 
 
@@ -125,8 +125,8 @@ class ChatLogConversationsTests(ChatlogTest):
 
     def test_chatlog_conversations(self):
         chatlog = ChatLog("Facebook")
-        self.assertEqual(chatlog._conversations, chatlog.conversations())
-        self.assertIsNot(chatlog._conversations, chatlog.conversations())
+        chatlog._conversations = [self.conversation1, self.conversation2]
+        self.assertEqual(tuple(chatlog._conversations), chatlog.conversations())
 
 
 
@@ -135,16 +135,16 @@ class ChatlogConversationAdditionTests(ChatlogTest):
     def test_can_add_conversation(self):
         chatlog = ChatLog("Facebook")
         chatlog.add_conversation(self.conversation1)
-        self.assertEqual(chatlog._conversations, set([self.conversation1]))
+        self.assertEqual(chatlog._conversations, [self.conversation1])
         chatlog.add_conversation(self.conversation2)
         self.assertEqual(
          chatlog._conversations,
-         set([self.conversation1, self.conversation2])
+         [self.conversation1, self.conversation2]
         )
         chatlog.add_conversation(self.conversation3)
         self.assertEqual(
          chatlog._conversations,
-         set([self.conversation1, self.conversation2, self.conversation3])
+         [self.conversation1, self.conversation2, self.conversation3]
         )
 
 
@@ -172,14 +172,9 @@ class ChatlogConversationRemovalTests(ChatlogTest):
 
     def test_can_remove_conversations(self):
         chatlog = ChatLog("Facebook")
-        chatlog.add_conversation(self.conversation1)
-        chatlog.add_conversation(self.conversation2)
-        self.assertEqual(
-         chatlog._conversations,
-         set([self.conversation1, self.conversation2])
-        )
+        chatlog._conversations = [self.conversation1, self.conversation2]
         chatlog.remove_conversation(self.conversation1)
-        self.assertEqual(chatlog._conversations, set([self.conversation2]))
+        self.assertEqual(chatlog._conversations, [self.conversation2])
 
 
 
@@ -188,12 +183,10 @@ class ChatLogToJsonTests(ChatlogTest):
     def test_can_get_json_from_chatlog(self):
         self.conversation1.to_json.return_value = {"aa": "bb"}
         self.conversation2.to_json.return_value = {"cc": "dd"}
-        self.conversation1.length.return_value = 100
-        self.conversation2.length.return_value = 101
         log = ChatLog("test log")
-        log._conversations = set([self.conversation1, self.conversation2])
+        log._conversations = [self.conversation1, self.conversation2]
         self.assertEqual(log.to_json(), {
-         "name": "test log", "conversations": [{"cc": "dd"}, {"aa": "bb"}]
+         "name": "test log", "conversations": [{"aa": "bb"}, {"cc": "dd"}]
         })
         self.conversation1.to_json.assert_called_with()
         self.conversation2.to_json.assert_called_with()
@@ -202,12 +195,10 @@ class ChatLogToJsonTests(ChatlogTest):
     def test_can_get_json_from_chatlog_with_attachments(self):
         self.conversation1.to_json.return_value = {"aa": "bb"}
         self.conversation2.to_json.return_value = {"cc": "dd"}
-        self.conversation1.length.return_value = 100
-        self.conversation2.length.return_value = 101
         log = ChatLog("test log")
-        log._conversations = set([self.conversation1, self.conversation2])
+        log._conversations = [self.conversation1, self.conversation2]
         self.assertEqual(log.to_json(attachment_path="path"), {
-         "name": "test log", "conversations": [{"cc": "dd"}, {"aa": "bb"}]
+         "name": "test log", "conversations": [{"aa": "bb"}, {"cc": "dd"}]
         })
         self.conversation1.to_json.assert_called_with(attachment_path="path")
         self.conversation2.to_json.assert_called_with(attachment_path="path")

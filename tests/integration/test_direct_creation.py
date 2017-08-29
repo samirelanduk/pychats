@@ -67,13 +67,11 @@ class Tests(TestCase):
         self.assertEqual(chatlog.name(), "Test Chatlog")
 
         self.assertEqual(
-         chatlog.conversations(),
-         set([conversation1, conversation2, conversation3])
+         chatlog.conversations(), (conversation1, conversation2, conversation3)
         )
 
         for conversation in chatlog.conversations():
             self.assertIs(conversation.chatlog(), chatlog)
-
 
         self.assertEqual(conversation1.participants(), set([mildred, marvin]))
         self.assertEqual(conversation2.participants(), set([marvin, spencer]))
@@ -82,7 +80,6 @@ class Tests(TestCase):
         for conversation in chatlog.conversations():
             for message in conversation.messages():
                 self.assertIs(message.conversation(), conversation)
-
 
         last_message = conversation1.messages()[-1]
         last_message.timestamp(datetime(1990, 1, 1, 12, 30, 12))

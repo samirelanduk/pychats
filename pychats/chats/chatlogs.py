@@ -13,7 +13,7 @@ class ChatLog:
         if not isinstance(name, str):
             raise TypeError("name must be str, not '%s'" % name)
         self._name = name
-        self._conversations = set()
+        self._conversations = []
 
 
     @staticmethod
@@ -70,7 +70,7 @@ class ChatLog:
 
         :returns: ``set`` of ``Conversation``"""
 
-        return set(self._conversations)
+        return tuple(self._conversations)
 
 
     def add_conversation(self, conversation):
@@ -91,7 +91,7 @@ class ChatLog:
               str(conversation), self
              )
             )
-        self._conversations.add(conversation)
+        self._conversations.append(conversation)
         conversation._chatlog = self
 
 
@@ -113,17 +113,13 @@ class ChatLog:
         if attachment_path:
             return {
              "name": self._name,
-             "conversations": [
-              conv.to_json(attachment_path=attachment_path) for conv in sorted(
-               self._conversations, key=lambda k: k.length(), reverse=True
-              )
-             ]
+             "conversations": [conv.to_json(
+              attachment_path=attachment_path
+             ) for conv in self._conversations]
             }
         return {
          "name": self._name,
-         "conversations": [conv.to_json() for conv in sorted(
-          self._conversations, key=lambda k: k.length(), reverse=True
-         )]
+         "conversations": [conv.to_json() for conv in self._conversations]
         }
 
 
